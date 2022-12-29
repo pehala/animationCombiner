@@ -1,11 +1,11 @@
 import bpy
 from bpy.types import Context
 
-from animationCombiner.operators.operator import ExampleOperator
-from animationCombiner.registry import AutoRegister
+from animationCombiner.operators import Empty, RunAnimationOperator, BackToStartOperator
+from animationCombiner.operators.file_action import IdentifierFileSelector
 
 
-class ACTIONS_UL_name(bpy.types.UIList, AutoRegister):
+class ACTIONS_UL_name(bpy.types.UIList):
     # The draw_item function is called for each item of the collection that is visible in the list.
     #   data is the RNA object containing the collection,
     #   item is the current drawn item of the collection,
@@ -38,7 +38,7 @@ class ACTIONS_UL_name(bpy.types.UIList, AutoRegister):
             layout.label(text="", icon_value=icon)
 
 
-class UIListPanelExample1(bpy.types.Panel, AutoRegister):
+class UIListPanelExample1(bpy.types.Panel):
     """Creates a Panel in the Object properties window"""
 
     bl_label = "Actions"
@@ -68,16 +68,16 @@ class UIListPanelExample1(bpy.types.Panel, AutoRegister):
         layout.separator()
         col = layout.column(align=True)
         row = col.row(align=True)
-        row.operator(ExampleOperator.bl_idname, text="Add", icon="ADD")
-        row.operator(ExampleOperator.bl_idname, text="Remove", icon="REMOVE")
-        col.operator(ExampleOperator.bl_idname, text="Process", icon="WORKSPACE")
+        row.operator(Empty.bl_idname, text="Add", icon="ADD")
+        row.operator(Empty.bl_idname, text="Remove", icon="REMOVE")
+        col.operator(Empty.bl_idname, text="Process", icon="WORKSPACE")
         # # The second one can usually be left as an empty string.
         # # It's an additional ID used to distinguish lists in case you use the same list several times in a given area.
         # layout.template_list("ActionsList", "compact", obj, "actions",
         #                      obj, "active_material_index", type='COMPACT')
 
 
-class ControlPanel(bpy.types.Panel, AutoRegister):
+class ControlPanel(bpy.types.Panel):
     """Creates a Panel in the Object properties window"""
 
     bl_label = "Controls"
@@ -92,11 +92,11 @@ class ControlPanel(bpy.types.Panel, AutoRegister):
         col = layout.column(align=True)
         row = col.row(align=True)
         col.prop(bpy.context.scene.render, "fps", text="FPS", slider=True)
-        row.operator("wm.run", text="Play", icon="PLAY")
-        row.operator("wm.back_to_start", text="Back To Start", icon="PREV_KEYFRAME")
+        row.operator(RunAnimationOperator.bl_idname, text="Play", icon="PLAY")
+        row.operator(BackToStartOperator.bl_idname, text="Back To Start", icon="PREV_KEYFRAME")
 
 
-class ImportPanel(bpy.types.Panel, AutoRegister):
+class ImportPanel(bpy.types.Panel):
     """Creates a Panel in the Object properties window"""
 
     bl_label = "Import/Export"
@@ -104,11 +104,11 @@ class ImportPanel(bpy.types.Panel, AutoRegister):
     bl_space_type = "VIEW_3D"
     bl_region_type = "UI"
     bl_category = "AnimationCombiner"
-    # bl_context = ".objectmode"
+    bl_context = ".posemode"
 
     def draw(self, context):
         layout = self.layout
         col = layout.column(align=True)
         row = col.row(align=True)
-        row.operator("wm.empty", text="Import", icon="IMPORT")
-        row.operator("wm.empty", text="Export", icon="EXPORT")
+        row.operator(IdentifierFileSelector.bl_idname, text="Import", icon="IMPORT")
+        row.operator(Empty.bl_idname, text="Export", icon="EXPORT")

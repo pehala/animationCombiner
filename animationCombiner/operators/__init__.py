@@ -6,8 +6,7 @@ import bpy
 from bpy.types import Context
 
 from animationCombiner.animation import create_armature
-from animationCombiner.parsers import HDM05MessifLoader
-from animationCombiner.registry import AutoRegister
+from animationCombiner.parsers.messif import HDM05MessifLoader
 
 
 class CreateExampleOperator(bpy.types.Operator, AutoRegister):
@@ -28,30 +27,31 @@ class CreateExampleOperator(bpy.types.Operator, AutoRegister):
 
     def execute(self, context):
         with resources.files("animationCombiner.resources").joinpath("test.data").open("r") as file:
-            loader = HDM05MessifLoader(file)
-        armature = create_armature(loader.load_skeleton())
+            loader = HDM05MessifLoader(file, "test")
+        armature = create_armature(loader.load_skeletons()[0])
         armature.rotation_mode = "XYZ"
         armature.rotation_euler.rotate_axis("X", math.radians(90))
 
         bpy.ops.wm.context_toggle(data_path="space_data.show_region_ui")
+        bpy.ops.object.mode_set(mode='POSE')
         return {"FINISHED"}
 
 
-class Empty(bpy.types.Operator, AutoRegister):
-    bl_idname = "wm.empty"
+class Empty(bpy.types.Operator):
+    bl_idname = "ac.empty"
     bl_label = "Empty Action"
 
 
-class RunAnimationOperator(bpy.types.Operator, AutoRegister):
-    bl_idname = "wm.run"
+class RunAnimationOperator(bpy.types.Operator):
+    bl_idname = "ac.run"
     bl_label = "Run Animation"
 
     def execute(self, context: Context) -> typing.Set[str]:
         return bpy.ops.screen.animation_play()
 
 
-class BackToStartOperator(bpy.types.Operator, AutoRegister):
-    bl_idname = "wm.back_to_start"
+class BackToStartOperator(bpy.types.Operator):
+    bl_idname = "ac.back_to_start"
     bl_label = "Back to start"
 
     def execute(self, context: Context) -> typing.Set[str]:
