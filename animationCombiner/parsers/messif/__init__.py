@@ -1,17 +1,21 @@
 import re
+from os import PathLike
 from typing import Collection
 
 from mathutils import Vector
 
-from animationCombiner.api.loader import SkeletonLoader, AnimationLoader
+from animationCombiner.parsers import AnimationLoader, register_parser
 from animationCombiner.api.model import Pose, Animation, Transition
 
 
-class MessifLoader(SkeletonLoader, AnimationLoader):
-    LINE = re.compile(r"")
+class MessifLoader(AnimationLoader):
+    def scrub_file(self) -> int:
+        return len(self.animations[0])
 
-    def __init__(self, names, relations, file) -> None:
-        super().__init__()
+    # LINE = re.compile(r"")
+
+    def __init__(self, names, relations, file, path) -> None:
+        super().__init__(file, path)
         self.names = names
         self.relations = relations
         self.animations = self.parse(file)
@@ -36,7 +40,7 @@ class MessifLoader(SkeletonLoader, AnimationLoader):
             animations.append(animation)
         return animations
 
-    def load_skeletons(self) -> Collection[Pose]:
+    def load_skeletons(self) -> list[Pose]:
         return [animation[0] for animation in self.animations]
 
     def load_animations(self) -> Collection[Animation]:
@@ -63,6 +67,7 @@ class MessifLoader(SkeletonLoader, AnimationLoader):
         return Pose(bones=bones, relations=self.relations)
 
 
+@register_parser(extensions={".data"})
 class HDM05MessifLoader(MessifLoader):
     NAMES = [
         "root",
@@ -124,5 +129,5 @@ class HDM05MessifLoader(MessifLoader):
         "rfoot": ["rtoes"],
     }
 
-    def __init__(self, file) -> None:
-        super().__init__(self.NAMES, self.RELATIONS, file)
+    def __init__(self, file, path) -> None:
+        super().__init__(self.NAMES, self.RELATIONS, file, path)
