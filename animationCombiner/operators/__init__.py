@@ -9,8 +9,8 @@ from animationCombiner.animation import create_armature
 from animationCombiner.parsers.messif import HDM05MessifLoader
 
 
-class CreateExampleOperator(bpy.types.Operator, AutoRegister):
-    bl_idname = "ac.CreateExample"
+class CreateExampleOperator(bpy.types.Operator):
+    bl_idname = "ac.create_example"
     bl_label = "Create HBM skeleton"
 
     @staticmethod

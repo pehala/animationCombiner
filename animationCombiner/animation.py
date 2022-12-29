@@ -24,12 +24,12 @@ def create_bone(armature, joint: Bone):
 def create_armature(pose: Pose):
     """Create the entire Armature"""
     armature = bpy.data.armatures.new("Armature")
-    action = armature.actions.add()
-    action.name = "Step"
-    action.value = 1000
-    action = armature.actions.add()
-    action.name = "Punch"
-    action.value = 1000
+    # action = armature.actions.add()
+    # action.name = "Step"
+    # action.value = 1000
+    # action = armature.actions.add()
+    # action.name = "Punch"
+    # action.value = 1000
     armature_object = bpy.data.objects.new("Armature", armature)
     # Link armature object to our scene
     collection = bpy.data.collections.new("My Collection")
