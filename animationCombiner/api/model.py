@@ -19,13 +19,6 @@ class Pose:
     bones: Dict[str, Vector]
     relations: Dict[str, List[str]]
 
-    # def items(self):
-    #     queue = ["root"]
-    #     while len(queue) > 0:
-    #         key = queue.pop()
-    #         queue.extend(self.relations.get(key, default=set()))
-    #         yield key, self.bones[key]
-
     @cached_property
     def root(self):
         root = Bone(name="root", pos=self.bones["root"], children=[])

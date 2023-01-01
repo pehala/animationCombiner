@@ -7,10 +7,6 @@ class ProcessOperator(bpy.types.Operator):
     bl_idname = "ac.process"
     bl_label = "Applies all actions to the armature"
 
-    # @staticmethod
-    # def run(self, context):
-    #     self.layout.operator(CreateExampleOperator.bl_idname)
-
     def execute(self, context):
         bpy.ops.anim.keyframe_clear_v3d()
         armature = bpy.data.armatures[bpy.context.view_layer.objects.active.name]

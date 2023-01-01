@@ -5,7 +5,7 @@ from bpy.props import StringProperty, PointerProperty
 from bpy_extras.io_utils import ImportHelper
 
 from animationCombiner.api.actions import LengthGroup
-from animationCombiner.parsers import find_parser_for_path, ParserError, load_animation_from_path
+from animationCombiner.parsers import ParserError, load_animation_from_path
 
 
 class IdentifierFileSelector(bpy.types.Operator, ImportHelper):
@@ -14,7 +14,6 @@ class IdentifierFileSelector(bpy.types.Operator, ImportHelper):
 
     def execute(self, context):
         bpy.ops.ac.custom_confirm_dialog('INVOKE_DEFAULT', path=self.properties.filepath)
-        # context.window_manager.invoke_props_dialog(bpy.ops.ac.custom_confirm_dialog)
         return {'FINISHED'}
 
 
