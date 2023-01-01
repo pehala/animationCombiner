@@ -1,6 +1,6 @@
-import os
 from abc import ABC, abstractmethod
-from functools import wraps, partial
+from abc import ABC, abstractmethod
+from functools import partial
 from os import PathLike
 from pathlib import Path
 from typing import Collection, Type
@@ -50,36 +50,6 @@ def find_parser_for_path(path: PathLike) -> Type["AnimationLoader"]:
 def load_animation_from_path(path: PathLike) -> Animation:
     with open(path, "r") as file:
         return find_parser_for_path(path)(file, path).load_animation()
-
-# class FileLoader(ABC):
-#
-#     # pylint: disable=unused-argument
-#     def __init__(self, file, path) -> None:
-#         self.path = path
-#
-#     def scrub
-    # @staticmethod
-    # def require_file(path: PathLike) -> bool:
-    #     """Return true, if the path exists and is a file"""
-    #     return os.path.exists(path) and os.path.isfile(path)
-    #
-    # def require_extensions(self, path: PathLike, extensions: Collection[str]) -> bool:
-    #     """Return true, if the files extension is in extensions"""
-    #     return self.require_file(path) and Path(path).suffix in extensions
-    #
-    # @abstractmethod
-    # def fits(self, path: PathLike) -> bool:
-    #     """Return True, if the path can be parsed by this parser"""
-
-
-# class SkeletonLoader(FileLoader):
-#     def load_skeleton(self) -> Pose:
-#         """Loads & returns initial Skeleton structure"""
-#         return next(iter(self.load_skeletons()))
-#
-#     @abstractmethod
-#     def load_skeletons(self) -> Collection[Pose]:
-#         """Loads & returns initial Skeleton structure"""
 
 
 class AnimationLoader(ABC):
