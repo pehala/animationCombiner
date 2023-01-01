@@ -3,6 +3,8 @@ from math import ceil
 import bpy
 from bpy.props import IntProperty, FloatProperty, StringProperty, PointerProperty
 
+from animationCombiner.parsers import load_animation_from_path
+
 
 class LengthGroup(bpy.types.PropertyGroup):
     def update_length(self, context):
@@ -31,6 +33,11 @@ class LengthGroup(bpy.types.PropertyGroup):
 
 
 class Action(bpy.types.PropertyGroup):
+
+    def __init__(self) -> None:
+        super().__init__()
+        self._animation = None
+
     name: StringProperty(name="Name", default="Unknown")
     path: StringProperty(name="Path to file")
     length_group: PointerProperty(type=LengthGroup)
@@ -39,3 +46,10 @@ class Action(bpy.types.PropertyGroup):
     def register(cls):
         bpy.types.Armature.actions = bpy.props.CollectionProperty(type=Action)
         bpy.types.Armature.active = bpy.props.IntProperty(name="active", default=0)
+
+    @property
+    def animation(self):
+        if self._animation is None:
+            self._animation = load_animation_from_path(self.path)
+            self.length_group.original_length = self._animation.length
+            self.length_group.length = self.length.original_length

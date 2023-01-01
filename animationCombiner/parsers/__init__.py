@@ -47,6 +47,10 @@ def find_parser_for_path(path: PathLike) -> Type["AnimationLoader"]:
     return PARSERS[extension]
 
 
+def load_animation_from_path(path: PathLike) -> Animation:
+    with open(path, "r") as file:
+        return find_parser_for_path(path)(file, path).load_animation()
+
 # class FileLoader(ABC):
 #
 #     # pylint: disable=unused-argument

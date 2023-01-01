@@ -49,3 +49,7 @@ class Transition:
 class Animation:
     pose: Pose
     transitions: List[Transition]
+
+    @property
+    def length(self):
+        return len(self.transitions)
