@@ -61,8 +61,6 @@ def create_armature(pose: Pose):
 
 def process_animation(armature, animation: Animation, frame_delay=1, frame_start=0, reset=False, reset_duraration=10):
     """Test"""
-    bpy.context.view_layer.objects.active = armature
-    bpy.ops.object.mode_set(mode="POSE")
     for name in animation.pose.bones.keys():
         bone = armature.pose.bones[name]
         bone.rotation_mode = "QUATERNION"

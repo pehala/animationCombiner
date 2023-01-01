@@ -52,10 +52,6 @@ def load_animations(dummy):
 
 class Action(bpy.types.PropertyGroup):
 
-    def __init__(self) -> None:
-        super().__init__()
-        self._animation = None
-
     name: StringProperty(name="Name", default="Unknown")
     path: StringProperty(name="Path to file")
     length_group: PointerProperty(type=LengthGroup)
@@ -73,6 +69,6 @@ class Action(bpy.types.PropertyGroup):
 
     @property
     def animation(self):
-        if self._animation is None:
+        if not hasattr(self, "_animation") or self._animation is None:
             self._load_animation()
         return self._animation

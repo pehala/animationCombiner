@@ -3,6 +3,7 @@ from bpy.types import Context
 
 from animationCombiner.operators import Empty, RunAnimationOperator, BackToStartOperator
 from animationCombiner.operators.file_action import IdentifierFileSelector
+from animationCombiner.operators.process import ProcessOperator
 
 
 class ACTIONS_UL_name(bpy.types.UIList):
@@ -70,7 +71,7 @@ class UIListPanelExample1(bpy.types.Panel):
         row = col.row(align=True)
         row.operator(Empty.bl_idname, text="Add", icon="ADD")
         row.operator(Empty.bl_idname, text="Remove", icon="REMOVE")
-        col.operator(Empty.bl_idname, text="Process", icon="WORKSPACE")
+        col.operator(ProcessOperator.bl_idname, text="Process", icon="WORKSPACE")
         # # The second one can usually be left as an empty string.
         # # It's an additional ID used to distinguish lists in case you use the same list several times in a given area.
         # layout.template_list("ActionsList", "compact", obj, "actions",
