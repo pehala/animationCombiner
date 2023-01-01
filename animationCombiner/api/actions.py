@@ -1,6 +1,7 @@
 from math import ceil
 
 import bpy
+from bpy.app.handlers import persistent
 from bpy.props import IntProperty, FloatProperty, StringProperty, PointerProperty
 
 from animationCombiner.parsers import load_animation_from_path
@@ -8,10 +9,14 @@ from animationCombiner.parsers import load_animation_from_path
 
 class LengthGroup(bpy.types.PropertyGroup):
     def update_length(self, context):
-        self.speed = self.length / self.original_length
+        expected = self.length / self.original_length
+        if self.speed != expected:
+            self.speed = expected
 
     def update_speed(self, context):
-        self.length = ceil(self.original_length * self.speed)
+        expected = ceil(self.original_length * self.speed)
+        if self.length != expected:
+            self.length = expected
 
     def apply(self, other: "LengthGroup"):
         self.length = other.length
@@ -32,6 +37,19 @@ class LengthGroup(bpy.types.PropertyGroup):
         row.prop(self, "speed")
 
 
+
+
+@persistent
+def load_animations(dummy):
+    for armature in bpy.data.armatures:
+        for action in armature.actions:
+            try:
+                action._load_animation()
+            except Exception as e:
+                # TODO: proper error handling
+                print(e)
+
+
 class Action(bpy.types.PropertyGroup):
 
     def __init__(self) -> None:
@@ -46,10 +64,15 @@ class Action(bpy.types.PropertyGroup):
     def register(cls):
         bpy.types.Armature.actions = bpy.props.CollectionProperty(type=Action)
         bpy.types.Armature.active = bpy.props.IntProperty(name="active", default=0)
+        bpy.app.handlers.load_post.append(load_animations)
+
+    def _load_animation(self):
+        self._animation = load_animation_from_path(self.path)
+        self.length_group.original_length = self._animation.length
+        self.length_group.length = self.length_group.original_length
 
     @property
     def animation(self):
         if self._animation is None:
-            self._animation = load_animation_from_path(self.path)
-            self.length_group.original_length = self._animation.length
-            self.length_group.length = self.length.original_length
+            self._load_animation()
+        return self._animation
