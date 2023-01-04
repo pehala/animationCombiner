@@ -1,14 +1,16 @@
+"""Module containing all Operators related to Importing actions"""
 import os
 
 import bpy
-from bpy.props import StringProperty, PointerProperty, BoolProperty
+from bpy.props import StringProperty, PointerProperty
 from bpy_extras.io_utils import ImportHelper
 
 from animationCombiner.api.actions import LengthGroup
 from animationCombiner.parsers import ParserError, load_animation_from_path, PARSERS
 
 
-class IdentifierFileSelector(bpy.types.Operator, ImportHelper):
+class ImportActionOperator(bpy.types.Operator, ImportHelper):
+    """Operator responsible for importing new actions"""
     bl_label = "Import file"
     bl_idname = "ac.file_selector"
 
@@ -16,7 +18,7 @@ class IdentifierFileSelector(bpy.types.Operator, ImportHelper):
     hide_props_region = True
     filter_glob: StringProperty(
         default="",
-        options={'HIDDEN'},
+        options={"HIDDEN"},
         maxlen=255,  # Max internal buffer length, longer would be clamped.
     )
 
@@ -25,15 +27,16 @@ class IdentifierFileSelector(bpy.types.Operator, ImportHelper):
         return super().invoke(context, _event)
 
     def execute(self, context):
-        bpy.ops.ac.custom_confirm_dialog('INVOKE_DEFAULT', path=self.properties.filepath)
-        return {'FINISHED'}
+        bpy.ops.ac.custom_confirm_dialog("INVOKE_DEFAULT", path=self.properties.filepath)
+        return {"FINISHED"}
 
 
-class SimplePropConfirmOperator(bpy.types.Operator):
-    """Really?"""
+class ImportActionSettingsOperator(bpy.types.Operator):
+    """Operator that sets properties of new actions"""
+
     bl_idname = "ac.custom_confirm_dialog"
     bl_label = "Pick file"
-    bl_options = {'REGISTER', 'INTERNAL'}
+    bl_options = {"REGISTER", "INTERNAL"}
 
     path: StringProperty(name="Path")
     length: PointerProperty(type=LengthGroup)
@@ -43,15 +46,14 @@ class SimplePropConfirmOperator(bpy.types.Operator):
         return True
 
     def execute(self, context):
-        print("self")
         armature = bpy.data.armatures[bpy.context.view_layer.objects.active.name]
         action = armature.actions.add()
         action.name = os.path.basename(self.path)
         action.path = self.path
         action.length_group.apply(self.length)
         action._animation = self.animation
-        self.report({'INFO'}, "Imported 1 action")
-        return {'FINISHED'}
+        self.report({"INFO"}, "Imported 1 action")
+        return {"FINISHED"}
 
     def invoke(self, context, event):
         try:
@@ -69,4 +71,3 @@ class SimplePropConfirmOperator(bpy.types.Operator):
         row.enabled = False
         row.prop(self, "path")
         self.length.draw(self.layout)
-
