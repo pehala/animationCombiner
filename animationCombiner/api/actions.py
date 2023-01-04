@@ -19,9 +19,9 @@ class LengthGroup(bpy.types.PropertyGroup):
             self.length = expected
 
     def apply(self, other: "LengthGroup"):
+        self.original_length = other.original_length
         self.length = other.length
         self.speed = other.speed
-        self.original_length = other.original_length
 
     original_length: IntProperty(name="Original Length (in frames)")
     length: IntProperty(name="Length (in frames)", update=update_length)
