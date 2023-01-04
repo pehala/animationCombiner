@@ -1,16 +1,28 @@
 import os
 
 import bpy
-from bpy.props import StringProperty, PointerProperty
+from bpy.props import StringProperty, PointerProperty, BoolProperty
 from bpy_extras.io_utils import ImportHelper
 
 from animationCombiner.api.actions import LengthGroup
-from animationCombiner.parsers import ParserError, load_animation_from_path
+from animationCombiner.parsers import ParserError, load_animation_from_path, PARSERS
 
 
 class IdentifierFileSelector(bpy.types.Operator, ImportHelper):
-    bl_label = "File Browser"
+    bl_label = "Import file"
     bl_idname = "ac.file_selector"
+
+    filename_ext = ".data"
+    hide_props_region = True
+    filter_glob: StringProperty(
+        default="",
+        options={'HIDDEN'},
+        maxlen=255,  # Max internal buffer length, longer would be clamped.
+    )
+
+    def invoke(self, context, _event):
+        self.filter_glob = "*" + ";*".join(PARSERS.keys())
+        return super().invoke(context, _event)
 
     def execute(self, context):
         bpy.ops.ac.custom_confirm_dialog('INVOKE_DEFAULT', path=self.properties.filepath)
