@@ -7,6 +7,7 @@ bl_info = {
     "name": "animationCombiner",
     "author": "phala",
     "description": "Blender plugin for crafting new animations from existing ones ",
+    "version": (0, 0, 1),
     "blender": (3, 0, 0),
     "location": "View3D",
     "warning": "",

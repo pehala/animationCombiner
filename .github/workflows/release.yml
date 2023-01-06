@@ -1,0 +1,31 @@
+name: Create Archive
+on:
+  workflow_dispatch:
+    inputs:
+      prerelease:
+        type: boolean
+        description: True, if the release should a Pre-release
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Get version
+      run: >-
+        echo "VERSION=$(grep -Po '(?<="version": \().*(?=\))' animationCombiner/__init__.py | sed -e "s/, /./g")" >> $GITHUB_ENV
+    - name: Create zip name
+      run: >-
+        echo "FILE=animationCombiner-$VERSION" >> $GITHUB_ENV
+    - name: Archive Release
+      uses: thedoctor0/zip-release@main
+      with:
+        type: 'zip'
+        filename: ${{ env.FILE }}.zip
+        directory: 'animationCombiner'
+    - name: Upload Release
+      uses: ncipollo/release-action@v1
+      with:
+        artifacts: ${{ env.FILE }}.zip
+        token: ${{ secrets.GITHUB_TOKEN }}
+        generateReleaseNotes: true
+        prerelease: ${{ github.event.inputs.prerelease }}
