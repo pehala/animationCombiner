@@ -2,7 +2,7 @@ import bpy
 from bpy.types import Context
 
 from animationCombiner.operators import Empty, RunAnimationOperator, BackToStartOperator
-from animationCombiner.operators.files.file_action import ImportActionOperator
+from animationCombiner.operators.files.importer import ImportActionOperator
 from animationCombiner.operators.process import ProcessOperator
 
 
