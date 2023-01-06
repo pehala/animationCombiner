@@ -4,7 +4,7 @@ from typing import Collection
 
 from mathutils import Vector
 
-from animationCombiner.parsers import AnimationLoader, register_parser
+from animationCombiner.parsers import AnimationLoader, AnimationExporter, register_parser, register_exporter
 from animationCombiner.api.model import Pose, Animation, Transition
 
 
@@ -131,3 +131,15 @@ class HDM05MessifLoader(MessifLoader):
 
     def __init__(self, file, path) -> None:
         super().__init__(self.NAMES, self.RELATIONS, file, path)
+
+
+@register_exporter(extensions={".data"})
+class HDM05MessifExporter(AnimationExporter):
+    def export_animations(self, transitions: Collection[Transition], file):
+        file.write("#objectKey messif.objects.keys.AbstractObjectKey 3361_31_757_198\n")
+        file.write("1;mcdr.objects.ObjectMocapPose\n")
+        for transition in transitions:
+            data = []
+            for name in HDM05MessifLoader.NAMES:
+                data.append(transition.bones[name])
+            file.write("; ".join(f"{vec[0]}, {vec[1]}, {vec[2]}" for vec in data) + "\n")
