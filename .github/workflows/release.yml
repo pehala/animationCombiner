@@ -27,5 +27,7 @@ jobs:
       with:
         artifacts: ${{ env.FILE }}.zip
         token: ${{ secrets.GITHUB_TOKEN }}
+        tag: ${{ env.VERSION }}
         generateReleaseNotes: true
         prerelease: ${{ github.event.inputs.prerelease }}
+        draft: true
