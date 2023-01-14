@@ -2,6 +2,7 @@ import bpy
 from bpy.types import Context
 
 from animationCombiner.operators import Empty, RunAnimationOperator, BackToStartOperator
+from animationCombiner.operators.files.export import ExportSomeData
 from animationCombiner.operators.files.importer import ImportActionOperator
 from animationCombiner.operators.process import ProcessOperator
 
@@ -112,4 +113,4 @@ class ImportPanel(bpy.types.Panel):
         col = layout.column(align=True)
         row = col.row(align=True)
         row.operator(ImportActionOperator.bl_idname, text="Import", icon="IMPORT")
-        row.operator(Empty.bl_idname, text="Export", icon="EXPORT")
+        row.operator(ExportSomeData.bl_idname, text="Export", icon="EXPORT")
