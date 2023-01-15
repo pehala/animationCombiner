@@ -41,6 +41,24 @@ class ActionsUIList(bpy.types.UIList):
             layout.label(text="", icon_value=icon)
 
 
+class MainPanel(bpy.types.Panel):
+    bl_label = "AnimationCombiner"
+    bl_idname = "AC_PT_main"
+    bl_space_type = "VIEW_3D"
+    bl_region_type = "UI"
+    bl_category = "AnimationCombiner"
+    bl_context = ".posemode"
+    bl_ui_units_x = 150
+
+    @classmethod
+    def poll(cls, context):
+        return context.object.name == "Armature"
+
+    def draw(self, context):
+        layout = self.layout
+        layout.label(text="Master Panel")
+
+
 class ActionPanel(bpy.types.Panel):
     """Creates a Panel in the Object properties window"""
 
@@ -48,8 +66,9 @@ class ActionPanel(bpy.types.Panel):
     bl_idname = "AC_PT_actions"
     bl_space_type = "VIEW_3D"
     bl_region_type = "UI"
-    bl_category = "AnimationCombiner"
-    bl_context = ".posemode"
+    # bl_category = "AnimationCombiner"
+    # bl_context = ".posemode"
+    bl_parent_id = MainPanel.bl_idname
 
     @classmethod
     def poll(cls, context):
@@ -83,8 +102,9 @@ class ControlPanel(bpy.types.Panel):
     bl_idname = "AC_PT_controls"
     bl_space_type = "VIEW_3D"
     bl_region_type = "UI"
-    bl_category = "AnimationCombiner"
-    bl_context = ".posemode"
+    # bl_category = "AnimationCombiner"
+    # bl_context = ".posemode"
+    bl_parent_id = MainPanel.bl_idname
 
     def draw(self, context):
         layout = self.layout
@@ -102,8 +122,9 @@ class ImportPanel(bpy.types.Panel):
     bl_idname = "AC_PT_import_export"
     bl_space_type = "VIEW_3D"
     bl_region_type = "UI"
-    bl_category = "AnimationCombiner"
-    bl_context = ".posemode"
+    # bl_category = "AnimationCombiner"
+    # bl_context = ".posemode"
+    bl_parent_id = MainPanel.bl_idname
 
     def draw(self, context):
         layout = self.layout
