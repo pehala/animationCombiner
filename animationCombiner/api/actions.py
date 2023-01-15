@@ -34,9 +34,7 @@ class LengthGroup(bpy.types.PropertyGroup):
         row = layout.row()
         row.prop(self, "length")
         row = layout.row()
-        row.prop(self, "speed")
-
-
+        row.prop(self, "speed", slider=False)
 
 
 @persistent
