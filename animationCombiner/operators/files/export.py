@@ -20,7 +20,7 @@ class ExportSomeData(bpy.types.Operator, ExportHelper):
     filename_ext = ".data"
 
     filter_glob: StringProperty(
-        default="*.txt",
+        default="*.data",
         options={'HIDDEN'},
         maxlen=255,  # Max internal buffer length, longer would be clamped.
     )

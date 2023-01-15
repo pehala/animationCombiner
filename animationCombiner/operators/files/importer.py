@@ -37,6 +37,7 @@ class ImportActionSettingsOperator(bpy.types.Operator):
     bl_idname = "ac.custom_confirm_dialog"
     bl_label = "Pick file"
     bl_options = {"REGISTER", "INTERNAL"}
+    bl_ui_units_x = 300
 
     path: StringProperty(name="Path")
     length: PointerProperty(type=LengthGroup)
@@ -70,4 +71,4 @@ class ImportActionSettingsOperator(bpy.types.Operator):
         row = self.layout.row()
         row.enabled = False
         row.prop(self, "path")
-        self.length.draw(self.layout)
+        self.length.draw(self.layout.box())
