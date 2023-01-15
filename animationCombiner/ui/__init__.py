@@ -7,7 +7,8 @@ from animationCombiner.operators.files.importer import ImportActionOperator
 from animationCombiner.operators.process import ProcessOperator
 
 
-class ACTIONS_UL_name(bpy.types.UIList):
+class ActionsUIList(bpy.types.UIList):
+    bl_idname = "AC_UL_actions"
     # The draw_item function is called for each item of the collection that is visible in the list.
     #   data is the RNA object containing the collection,
     #   item is the current drawn item of the collection,
@@ -40,15 +41,11 @@ class ACTIONS_UL_name(bpy.types.UIList):
             layout.label(text="", icon_value=icon)
 
 
-class UIListPanelExample1(bpy.types.Panel):
+class ActionPanel(bpy.types.Panel):
     """Creates a Panel in the Object properties window"""
 
     bl_label = "Actions"
-    # bl_idname = "OBJECT_PT_ui_list_example_1"
-    bl_idname = "VIEW3D_PT_example_panel"
-    # bl_label = 'Example Panel'
-    # bl_space_type = 'PROPERTIES'
-    # bl_region_type = 'WINDOW'
+    bl_idname = "AC_PT_actions"
     bl_space_type = "VIEW_3D"
     bl_region_type = "UI"
     bl_category = "AnimationCombiner"
@@ -66,7 +63,7 @@ class UIListPanelExample1(bpy.types.Panel):
         # # template_list now takes two new args.
         # # The first one is the identifier of the registered UIList to use (if you want only the default list,
         # # with no custom draw code, use "UI_UL_list").
-        layout.template_list("ACTIONS_UL_name", "", obj, "actions", obj, "active")
+        layout.template_list(ActionsUIList.bl_idname, "", obj, "actions", obj, "active")
         layout.separator()
         col = layout.column(align=True)
         row = col.row(align=True)
@@ -83,7 +80,7 @@ class ControlPanel(bpy.types.Panel):
     """Creates a Panel in the Object properties window"""
 
     bl_label = "Controls"
-    bl_idname = "VIEW3D_PT_controls"
+    bl_idname = "AC_PT_controls"
     bl_space_type = "VIEW_3D"
     bl_region_type = "UI"
     bl_category = "AnimationCombiner"
@@ -102,7 +99,7 @@ class ImportPanel(bpy.types.Panel):
     """Creates a Panel in the Object properties window"""
 
     bl_label = "Import/Export"
-    bl_idname = "VIEW3D_PT_import"
+    bl_idname = "AC_PT_import_export"
     bl_space_type = "VIEW_3D"
     bl_region_type = "UI"
     bl_category = "AnimationCombiner"
