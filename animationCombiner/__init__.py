@@ -4,14 +4,14 @@ import bpy
 from animationCombiner import registry
 
 bl_info = {
-    "name": "animationCombiner",
+    "name": "Animation Combiner",
     "author": "phala",
-    "description": "Blender plugin for crafting new animations from existing ones ",
+    "description": "Blender plugin for crafting new animations from existing ones",
     "version": (0, 0, 1),
     "blender": (3, 0, 0),
-    "location": "View3D",
+    "location": "View3D -> Animation",
     "warning": "",
-    "category": "Generic",
+    "category": "Animation",
 }
 
 
