@@ -9,6 +9,7 @@ from animationCombiner.operators.process import ProcessOperator
 
 class ActionsUIList(bpy.types.UIList):
     bl_idname = "AC_UL_actions"
+
     # The draw_item function is called for each item of the collection that is visible in the list.
     #   data is the RNA object containing the collection,
     #   item is the current drawn item of the collection,
@@ -46,7 +47,7 @@ class MainPanel(bpy.types.Panel):
     bl_idname = "AC_PT_main"
     bl_space_type = "VIEW_3D"
     bl_region_type = "UI"
-    bl_category = "AnimationCombiner"
+    bl_category = "Animation"
     bl_context = ".posemode"
     bl_ui_units_x = 150
 
@@ -66,8 +67,6 @@ class ActionPanel(bpy.types.Panel):
     bl_idname = "AC_PT_actions"
     bl_space_type = "VIEW_3D"
     bl_region_type = "UI"
-    # bl_category = "AnimationCombiner"
-    # bl_context = ".posemode"
     bl_parent_id = MainPanel.bl_idname
 
     @classmethod
@@ -102,8 +101,6 @@ class ControlPanel(bpy.types.Panel):
     bl_idname = "AC_PT_controls"
     bl_space_type = "VIEW_3D"
     bl_region_type = "UI"
-    # bl_category = "AnimationCombiner"
-    # bl_context = ".posemode"
     bl_parent_id = MainPanel.bl_idname
 
     def draw(self, context):
@@ -122,8 +119,6 @@ class ImportPanel(bpy.types.Panel):
     bl_idname = "AC_PT_import_export"
     bl_space_type = "VIEW_3D"
     bl_region_type = "UI"
-    # bl_category = "AnimationCombiner"
-    # bl_context = ".posemode"
     bl_parent_id = MainPanel.bl_idname
 
     def draw(self, context):
