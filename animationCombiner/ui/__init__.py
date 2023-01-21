@@ -36,5 +36,8 @@ class ControlPanel(bpy.types.Panel):
         col = layout.column(align=True)
         row = col.row(align=True)
         col.prop(bpy.context.scene.render, "fps", text="FPS", slider=True)
-        row.operator(RunAnimationOperator.bl_idname, text="Play", icon="PLAY")
+        if bpy.context.screen.is_animation_playing:
+            row.operator(RunAnimationOperator.bl_idname, text="Stop", icon="PAUSE")
+        else:
+            row.operator(RunAnimationOperator.bl_idname, text="Play", icon="PLAY")
         row.operator(BackToStartOperator.bl_idname, text="Back To Start", icon="PREV_KEYFRAME")
