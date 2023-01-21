@@ -41,6 +41,7 @@ class ActionPanel(Panel):
     bl_space_type = "VIEW_3D"
     bl_region_type = "UI"
     bl_parent_id = MainPanel.bl_idname
+    bl_order = 1
 
     @classmethod
     def poll(cls, context):

@@ -12,6 +12,7 @@ class MainPanel(bpy.types.Panel):
     bl_region_type = "UI"
     bl_category = "Animation"
     bl_context = ".posemode"
+    bl_order = 0
 
     @classmethod
     def poll(cls, context):
@@ -30,6 +31,7 @@ class ControlPanel(bpy.types.Panel):
     bl_space_type = "VIEW_3D"
     bl_region_type = "UI"
     bl_parent_id = MainPanel.bl_idname
+    bl_order = 0
 
     def draw(self, context):
         layout = self.layout
