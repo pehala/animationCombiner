@@ -1,6 +1,7 @@
 import bpy
 from bpy.types import Operator, Panel
 
+from animationCombiner.operators.files.export import ExportSomeData
 from animationCombiner.operators.files.importer import ImportActionOperator
 from animationCombiner.operators.process import ProcessOperator
 from animationCombiner.ui import MainPanel
@@ -75,7 +76,9 @@ class ActionPanel(Panel):
 
         layout.separator()
         col = layout.column()
-        col.operator(ProcessOperator.bl_idname, text="Process", icon="WORKSPACE")
+        row = col.row()
+        row.operator(ProcessOperator.bl_idname, text="Process", icon="WORKSPACE")
+        row.operator(ExportSomeData.bl_idname, text="Export", icon="EXPORT")
 
 
 class DeleteItem(Operator):
