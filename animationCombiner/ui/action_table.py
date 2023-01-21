@@ -3,7 +3,7 @@ from bpy.types import Operator, Panel
 
 from animationCombiner.operators.files.export import ExportSomeData
 from animationCombiner.operators.files.importer import ImportActionOperator
-from animationCombiner.operators.process import ProcessOperator
+from animationCombiner.operators.process import ApplyOperator
 from animationCombiner.ui import MainPanel
 
 
@@ -31,7 +31,7 @@ class ActionsUIList(bpy.types.UIList):
 
 
 class ActionPanel(Panel):
-    """Creates a Panel in the Object properties window"""
+    """Panel containing list of actions."""
 
     bl_label = "Actions"
     bl_idname = "AC_PT_actions"
@@ -77,12 +77,12 @@ class ActionPanel(Panel):
         layout.separator()
         col = layout.column()
         row = col.row()
-        row.operator(ProcessOperator.bl_idname, text="Process", icon="WORKSPACE")
+        row.operator(ApplyOperator.bl_idname, text="Apply", icon="WORKSPACE")
         row.operator(ExportSomeData.bl_idname, text="Export", icon="EXPORT")
 
 
 class DeleteItem(Operator):
-    """Delete the selected item from the list."""
+    """Deletes the selected action."""
 
     bl_idname = "my_list.delete_item"
     bl_label = "Deletes an item"
@@ -102,7 +102,7 @@ class DeleteItem(Operator):
 
 
 class MoveItem(Operator):
-    """Move an item in the list."""
+    """Moves the selected action up/down."""
 
     bl_idname = "my_list.move_item"
     bl_label = "Move an item in the list"

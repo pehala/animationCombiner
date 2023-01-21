@@ -5,6 +5,7 @@ from animationCombiner.operators import RunAnimationOperator, BackToStartOperato
 
 
 class MainPanel(bpy.types.Panel):
+    """Parent panel for the entire plugin."""
     bl_label = "AnimationCombiner"
     bl_idname = "AC_PT_main"
     bl_space_type = "VIEW_3D"
@@ -22,7 +23,7 @@ class MainPanel(bpy.types.Panel):
 
 
 class ControlPanel(bpy.types.Panel):
-    """Creates a Panel in the Object properties window"""
+    """Contains playback related settings/controls."""
 
     bl_label = "Controls"
     bl_idname = "AC_PT_controls"

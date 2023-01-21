@@ -10,7 +10,7 @@ from animationCombiner.parsers import ParserError, load_animation_from_path, PAR
 
 
 class ImportActionOperator(bpy.types.Operator, ImportHelper):
-    """Operator responsible for importing new actions"""
+    """Imports new action."""
     bl_label = "Import file"
     bl_idname = "ac.file_selector"
 
@@ -32,7 +32,7 @@ class ImportActionOperator(bpy.types.Operator, ImportHelper):
 
 
 class ImportActionSettingsOperator(bpy.types.Operator):
-    """Operator that sets properties of new actions"""
+    """Operator that sets properties of new actions."""
 
     bl_idname = "ac.custom_confirm_dialog"
     bl_label = "Pick file"

@@ -3,7 +3,8 @@ import bpy
 from animationCombiner.animation import process_animation
 
 
-class ProcessOperator(bpy.types.Operator):
+class ApplyOperator(bpy.types.Operator):
+    """Applies the actions to the Armature."""
     bl_idname = "ac.process"
     bl_label = "Applies all actions to the armature"
 
