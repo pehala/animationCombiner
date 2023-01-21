@@ -21,7 +21,9 @@ class ActionsUIList(bpy.types.UIList):
             # We use icon_value of label, as our given icon is an integer value, not an enum ID.
             # Note "data" names should never be translated!
             if ma:
-                layout.prop(ma, "name", text="", emboss=False, icon_value=icon)
+                sub = layout.split(factor=0.4, align=True)
+                sub.prop(ma, "name", text="Name", emboss=False, icon_value=icon)
+                sub.prop(ma.length_group, "length", text="Length:", emboss=False, icon_value=icon, expand=True)
             else:
                 layout.label(text="", translate=False, icon_value=icon)
         # 'GRID' layout type should be as compact as possible (typically a single icon!).
@@ -69,10 +71,7 @@ class ActionPanel(Panel):
             row = col.row()
             row.prop(item, "name")
 
-            group = item.length_group
-            for prop in ["length", "speed"]:
-                row = col.row()
-                row.prop(group, prop, slider=False)
+            item.length_group.draw(col)
 
         layout.separator()
         col = layout.column()
