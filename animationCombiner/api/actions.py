@@ -7,16 +7,27 @@ from bpy.props import IntProperty, FloatProperty, StringProperty, PointerPropert
 from animationCombiner.parsers import load_animation_from_path
 
 
+def on_actions_update():
+    """Recalculates length of final animation after the actions were updated"""
+    armature = bpy.data.armatures[bpy.context.view_layer.objects.active.name]
+    length = 0
+    for action in armature.actions:
+        length += action.length_group.length
+    armature.animation_length = length
+
+
 class LengthGroup(bpy.types.PropertyGroup):
     def update_length(self, context):
         expected = self.length / self.original_length
         if self.speed != expected:
             self.speed = expected
+            on_actions_update()
 
     def update_speed(self, context):
         expected = ceil(self.original_length * self.speed)
         if self.length != expected:
             self.length = expected
+            on_actions_update()
 
     def apply(self, other: "LengthGroup"):
         self.original_length = other.original_length
@@ -57,7 +68,8 @@ class Action(bpy.types.PropertyGroup):
     @classmethod
     def register(cls):
         bpy.types.Armature.actions = bpy.props.CollectionProperty(type=Action)
-        bpy.types.Armature.active = bpy.props.IntProperty(name="active", default=0)
+        bpy.types.Armature.active = bpy.props.IntProperty(name="active", default=0, min=0)
+        bpy.types.Armature.animation_length = bpy.props.IntProperty(name="animationLength", default=0, min=0, description="Final length in frames of the animation")
         bpy.app.handlers.load_post.append(load_animations)
 
     def _load_animation(self):

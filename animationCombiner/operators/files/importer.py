@@ -5,7 +5,7 @@ import bpy
 from bpy.props import StringProperty, PointerProperty
 from bpy_extras.io_utils import ImportHelper
 
-from animationCombiner.api.actions import LengthGroup
+from animationCombiner.api.actions import LengthGroup, on_actions_update
 from animationCombiner.parsers import ParserError, load_animation_from_path, PARSERS
 
 
@@ -54,6 +54,7 @@ class ImportActionSettingsOperator(bpy.types.Operator):
         action.path = self.path
         action.length_group.apply(self.length)
         action._animation = self.animation
+        on_actions_update()
         self.report({"INFO"}, "Imported 1 action")
         return {"FINISHED"}
 

@@ -1,6 +1,7 @@
 import bpy
 from bpy.types import Operator, Panel
 
+from animationCombiner.api.actions import on_actions_update
 from animationCombiner.operators.files.export import ExportSomeData
 from animationCombiner.operators.files.importer import ImportActionOperator
 from animationCombiner.operators.process import ApplyOperator
@@ -52,6 +53,12 @@ class ActionPanel(Panel):
         layout.template_list(ActionsUIList.bl_idname, "", obj, "actions", obj, "active")
         layout.separator()
 
+        col = layout.column()
+        row = col.row(align=True)
+        row.enabled = False
+        row.label(text="Final length")
+        row.prop(obj, "animation_length", slider=False, text="")
+
         col = layout.column(align=True)
         row = col.row(align=True)
         row.operator(ImportActionOperator.bl_idname, text='Import', icon="IMPORT")
@@ -96,7 +103,7 @@ class DeleteItem(Operator):
 
         my_list.remove(index)
         context.object.data.active = min(max(0, index - 1), len(my_list) - 1)
-
+        on_actions_update()
         return {'FINISHED'}
 
 
