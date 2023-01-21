@@ -14,6 +14,7 @@ def on_actions_update():
     for action in armature.actions:
         length += action.length_group.length
     armature.animation_length = length
+    armature.is_applied = False
 
 
 class LengthGroup(bpy.types.PropertyGroup):
@@ -73,6 +74,7 @@ class Action(bpy.types.PropertyGroup):
         bpy.types.Armature.actions = bpy.props.CollectionProperty(type=Action)
         bpy.types.Armature.active = bpy.props.IntProperty(name="active", default=0, min=0)
         bpy.types.Armature.animation_length = bpy.props.IntProperty(name="animationLength", default=0, min=0, description="Final length in frames of the animation")
+        bpy.types.Armature.is_applied = bpy.props.BoolProperty(name="Was apply used", default=False, description="True, if the armature is up-to-date with actions")
         bpy.app.handlers.load_post.append(load_animations)
 
     def _load_animation(self):

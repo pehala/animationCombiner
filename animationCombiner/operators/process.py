@@ -15,4 +15,5 @@ class ApplyOperator(bpy.types.Operator):
         for action in armature.actions:
             ending = process_animation(bpy.context.view_layer.objects.active, action.animation, reset=True, frame_start=ending)
         bpy.context.scene.frame_end = ending
+        armature.is_applied = True
         return {"FINISHED"}

@@ -83,6 +83,8 @@ class ActionPanel(Panel):
 
         layout.separator()
         col = layout.column()
+        if not obj.is_applied:
+            col.label(text="Current actions were not applied yet!", icon="ERROR")
         row = col.row()
         row.operator(ApplyOperator.bl_idname, text="Apply", icon="WORKSPACE")
         row.operator(ExportSomeData.bl_idname, text="Export", icon="EXPORT")
