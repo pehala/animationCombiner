@@ -3,7 +3,8 @@ import bpy
 from animationCombiner.animation import process_animation
 
 
-class ProcessOperator(bpy.types.Operator):
+class ApplyOperator(bpy.types.Operator):
+    """Applies the actions to the Armature."""
     bl_idname = "ac.process"
     bl_label = "Applies all actions to the armature"
 
@@ -14,4 +15,5 @@ class ProcessOperator(bpy.types.Operator):
         for action in armature.actions:
             ending = process_animation(bpy.context.view_layer.objects.active, action.animation, reset=True, frame_start=ending)
         bpy.context.scene.frame_end = ending
+        armature.is_applied = True
         return {"FINISHED"}

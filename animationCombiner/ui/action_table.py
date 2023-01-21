@@ -1,8 +1,10 @@
 import bpy
 from bpy.types import Operator, Panel
 
+from animationCombiner.api.actions import on_actions_update
+from animationCombiner.operators.files.export import ExportSomeData
 from animationCombiner.operators.files.importer import ImportActionOperator
-from animationCombiner.operators.process import ProcessOperator
+from animationCombiner.operators.process import ApplyOperator
 from animationCombiner.ui import MainPanel
 
 
@@ -20,7 +22,9 @@ class ActionsUIList(bpy.types.UIList):
             # We use icon_value of label, as our given icon is an integer value, not an enum ID.
             # Note "data" names should never be translated!
             if ma:
-                layout.prop(ma, "name", text="", emboss=False, icon_value=icon)
+                sub = layout.split(factor=0.4, align=True)
+                sub.prop(ma, "name", text="Name", emboss=False, icon_value=icon)
+                sub.prop(ma.length_group, "length", text="Length:", emboss=False, icon_value=icon, expand=True)
             else:
                 layout.label(text="", translate=False, icon_value=icon)
         # 'GRID' layout type should be as compact as possible (typically a single icon!).
@@ -30,13 +34,14 @@ class ActionsUIList(bpy.types.UIList):
 
 
 class ActionPanel(Panel):
-    """Creates a Panel in the Object properties window"""
+    """Panel containing list of actions."""
 
     bl_label = "Actions"
     bl_idname = "AC_PT_actions"
     bl_space_type = "VIEW_3D"
     bl_region_type = "UI"
     bl_parent_id = MainPanel.bl_idname
+    bl_order = 1
 
     @classmethod
     def poll(cls, context):
@@ -48,6 +53,12 @@ class ActionPanel(Panel):
         layout.label(text="Actions that will be processed")
         layout.template_list(ActionsUIList.bl_idname, "", obj, "actions", obj, "active")
         layout.separator()
+
+        col = layout.column()
+        row = col.row(align=True)
+        row.enabled = False
+        row.label(text="Final length")
+        row.prop(obj, "animation_length", slider=False, text="")
 
         col = layout.column(align=True)
         row = col.row(align=True)
@@ -68,18 +79,19 @@ class ActionPanel(Panel):
             row = col.row()
             row.prop(item, "name")
 
-            group = item.length_group
-            for prop in ["length", "speed"]:
-                row = col.row()
-                row.prop(group, prop, slider=False)
+            item.length_group.draw(col)
 
         layout.separator()
         col = layout.column()
-        col.operator(ProcessOperator.bl_idname, text="Process", icon="WORKSPACE")
+        if not obj.is_applied:
+            col.label(text="Current actions were not applied yet!", icon="ERROR")
+        row = col.row()
+        row.operator(ApplyOperator.bl_idname, text="Apply", icon="WORKSPACE")
+        row.operator(ExportSomeData.bl_idname, text="Export", icon="EXPORT")
 
 
 class DeleteItem(Operator):
-    """Delete the selected item from the list."""
+    """Deletes the selected action."""
 
     bl_idname = "my_list.delete_item"
     bl_label = "Deletes an item"
@@ -94,12 +106,12 @@ class DeleteItem(Operator):
 
         my_list.remove(index)
         context.object.data.active = min(max(0, index - 1), len(my_list) - 1)
-
+        on_actions_update()
         return {'FINISHED'}
 
 
 class MoveItem(Operator):
-    """Move an item in the list."""
+    """Moves the selected action up/down."""
 
     bl_idname = "my_list.move_item"
     bl_label = "Move an item in the list"

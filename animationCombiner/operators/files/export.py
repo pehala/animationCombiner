@@ -12,7 +12,7 @@ def to_quaternion(curves, frame):
 
 
 class ExportSomeData(bpy.types.Operator, ExportHelper):
-    """This appears in the tooltip of the operator and in the generated docs"""
+    """Exports the animation data. Need to be processed first"""
     bl_idname = "ac.export_file"  # important since its how bpy.ops.import_test.some_data is constructed
     bl_label = "Export Animation"
 
