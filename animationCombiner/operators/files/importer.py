@@ -40,6 +40,7 @@ class ImportActionSettingsOperator(bpy.types.Operator):
     bl_ui_units_x = 300
 
     path: StringProperty(name="Path")
+    name: StringProperty(name="Name")
     length: PointerProperty(type=LengthGroup)
 
     @classmethod
@@ -49,7 +50,7 @@ class ImportActionSettingsOperator(bpy.types.Operator):
     def execute(self, context):
         armature = bpy.data.armatures[bpy.context.view_layer.objects.active.name]
         action = armature.actions.add()
-        action.name = os.path.basename(self.path)
+        action.name = self.name
         action.path = self.path
         action.length_group.apply(self.length)
         action._animation = self.animation
@@ -61,6 +62,7 @@ class ImportActionSettingsOperator(bpy.types.Operator):
             self.animation = load_animation_from_path(self.path)
             self.length.original_length = self.animation.length
             self.length.length = self.length.original_length
+            self.name = os.path.basename(self.path)
         except ParserError as err:
             self.report({"WARNING"}, str(err.message))
             return {"CANCELLED"}
@@ -71,4 +73,6 @@ class ImportActionSettingsOperator(bpy.types.Operator):
         row = self.layout.row()
         row.enabled = False
         row.prop(self, "path")
+        row = self.layout.row()
+        row.prop(self, "name")
         self.length.draw(self.layout.box())
