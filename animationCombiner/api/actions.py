@@ -77,6 +77,14 @@ class Action(bpy.types.PropertyGroup):
         bpy.types.Armature.is_applied = bpy.props.BoolProperty(name="Was apply used", default=False, description="True, if the armature is up-to-date with actions")
         bpy.app.handlers.load_post.append(load_animations)
 
+    @classmethod
+    def unregister(cls):
+        del bpy.types.Armature.actions
+        del bpy.types.Armature.active
+        del bpy.types.Armature.animation_length
+        del bpy.types.Armature.is_applied
+        bpy.app.handlers.load_post.remove(load_animations)
+
     def _load_animation(self):
         self._animation = load_animation_from_path(self.path)
         self.length_group.original_length = self._animation.length

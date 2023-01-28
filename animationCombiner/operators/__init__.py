@@ -3,6 +3,7 @@ import typing
 from importlib import resources
 
 import bpy
+from bpy.props import StringProperty
 from bpy.types import Context
 
 from animationCombiner.animation import create_armature
@@ -33,7 +34,7 @@ class CreateExampleOperator(bpy.types.Operator):
         armature.rotation_mode = "XYZ"
         armature.rotation_euler.rotate_axis("X", math.radians(90))
 
-        bpy.ops.wm.context_toggle(data_path="space_data.show_region_ui")
+        # bpy.ops.wm.context_toggle(data_path="space_data.show_region_ui")
         bpy.ops.object.mode_set(mode='POSE')
         return {"FINISHED"}
 
@@ -60,3 +61,15 @@ class BackToStartOperator(bpy.types.Operator):
 
     def execute(self, context: Context) -> typing.Set[str]:
         return bpy.ops.screen.frame_jump(end=False)
+
+
+class SelectObjectOperator(bpy.types.Operator):
+    bl_idname = "ac.select_name"
+    bl_label = "Selects a armature by name"
+
+    name: StringProperty(name="Armature Name")
+
+    def execute(self, context: Context) -> typing.Set[str]:
+        bpy.context.view_layer.objects.active = bpy.data.objects[self.name]
+        bpy.ops.object.mode_set(mode="POSE")
+        return {"FINISHED"}
