@@ -41,11 +41,12 @@ class ActionPanel(Panel):
     bl_space_type = "VIEW_3D"
     bl_region_type = "UI"
     bl_parent_id = MainPanel.bl_idname
-    bl_order = 1
+    bl_context = ".posemode"
+    bl_order = 20
 
     @classmethod
     def poll(cls, context):
-        return context.object.name == "Armature"
+        return context.object.type == "ARMATURE"
 
     def draw(self, context):
         obj = context.object.data
