@@ -13,7 +13,7 @@ class MainPanel(bpy.types.Panel):
     bl_idname = "AC_PT_main"
     bl_space_type = "VIEW_3D"
     bl_region_type = "UI"
-    bl_category = "Animation"
+    bl_category = "AnimationCombiner"
 
     def draw(self, context):
         layout = self.layout
