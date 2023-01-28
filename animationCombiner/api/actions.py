@@ -40,16 +40,14 @@ class LengthGroup(bpy.types.PropertyGroup):
     speed: FloatProperty(name="Speed", description="Speed (compared to original)", default=1, update=update_speed)
 
     def draw(self, layout):
-        row = layout.row().split(factor=0.4)
+        layout.use_property_split = True
+        row = layout.row()
         row.enabled = False
-        row.label(text="Original Length")
-        row.prop(self, "original_length", text="")
-        row = layout.row().split(factor=0.4)
-        row.label(text="Length")
-        row.prop(self, "length", text="")
-        row = layout.row().split(factor=0.4)
-        row.label(text="Speed")
-        row.prop(self, "speed", slider=False, text="")
+        row.prop(self, "original_length")
+        row = layout.row()
+        row.prop(self, "length")
+        row = layout.row()
+        row.prop(self, "speed", slider=False)
 
 
 @persistent
