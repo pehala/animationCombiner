@@ -23,8 +23,8 @@ class ActionsUIList(bpy.types.UIList):
             # Note "data" names should never be translated!
             if ma:
                 sub = layout.split(factor=0.4, align=True)
-                sub.prop(ma, "name", text="Name", emboss=False, icon_value=icon)
-                sub.prop(ma.length_group, "length", text="Length:", emboss=False, icon_value=icon, expand=True)
+                sub.prop(ma, "name", text="", emboss=False, icon_value=icon)
+                sub.prop(ma.length_group, "length", text="", emboss=False, icon_value=icon, expand=True)
             else:
                 layout.label(text="", translate=False, icon_value=icon)
         # 'GRID' layout type should be as compact as possible (typically a single icon!).
@@ -51,7 +51,12 @@ class ActionPanel(Panel):
     def draw(self, context):
         obj = context.object.data
         layout = self.layout
+        layout.use_property_split = True
         layout.label(text="Actions that will be processed")
+        layout.separator()
+        row = layout.row().split(factor=0.4, align=True)
+        row.label(text="Name")
+        row.label(text="Length")
         layout.template_list(ActionsUIList.bl_idname, "", obj, "actions", obj, "active")
         layout.separator()
 
