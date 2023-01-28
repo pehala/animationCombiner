@@ -1,5 +1,7 @@
 """Core module of the plugin"""
 import bpy
+from bpy.props import BoolProperty
+from bpy.types import AddonPreferences
 
 from animationCombiner import registry
 
@@ -9,10 +11,12 @@ bl_info = {
     "description": "Blender plugin for crafting new animations from existing ones",
     "version": (0, 0, 1),
     "blender": (3, 0, 0),
-    "location": "View3D -> Animation",
+    "location": "View3D -> AnimationCombiner",
     "warning": "",
     "category": "Animation",
 }
+
+PREFERENCES = bpy.context.preferences.addons[__name__].preferences
 
 
 def register():
