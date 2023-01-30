@@ -21,7 +21,7 @@ jobs:
       with:
         type: 'zip'
         filename: ${{ env.FILE }}.zip
-        directory: 'animationCombiner'
+        path: 'animationCombiner'
     - name: Upload Release
       uses: ncipollo/release-action@v1
       with:
