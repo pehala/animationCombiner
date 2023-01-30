@@ -69,8 +69,6 @@ def _register_parser(func=None, *, extensions: Collection[str] = None, collectio
 def _find_parser_for_path(path: PathLike, collection):
     """Return descendant of AnimationLoader that is registered for that path"""
     path = Path(path)
-    if not path.exists() or not path.is_file():
-        raise ParserError(f"Path {path} must exists and must be a file")
     extension = path.suffix
     if extension not in collection:
         raise ParserError(f"Extension {extension} is not recognized")
@@ -83,6 +81,9 @@ register_exporter = functools.partial(_register_parser, collection=EXPORTERS, cl
 
 def find_parser_for_path(path: PathLike) -> Type["AnimationLoader"]:
     """Return descendant of AnimationLoader that is registered for that path"""
+    path = Path(path)
+    if not path.exists() or not path.is_file():
+        raise ParserError(f"Path {path} must exists and must be a file")
     return _find_parser_for_path(path, PARSERS)
 
 
