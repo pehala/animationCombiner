@@ -25,7 +25,7 @@ jobs:
     - name: Upload Release
       uses: ncipollo/release-action@v1
       with:
-        artifacts: animationCombiner/${{ env.FILE }}.zip
+        artifacts: ${{ env.FILE }}.zip
         token: ${{ secrets.GITHUB_TOKEN }}
         tag: ${{ env.VERSION }}
         generateReleaseNotes: true
