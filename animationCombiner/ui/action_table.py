@@ -137,6 +137,8 @@ class MoveItem(Operator):
         new_index = index + (-1 if self.direction == 'UP' else 1)
 
         context.object.data.active = max(0, min(new_index, list_length))
+        if index != context.object.data.active:
+            on_actions_update()
 
     def execute(self, context):
         my_list = context.object.data.actions
