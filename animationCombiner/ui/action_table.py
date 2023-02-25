@@ -24,7 +24,9 @@ class ActionsUIList(bpy.types.UIList):
             if ma:
                 sub = layout.split(factor=0.4, align=True)
                 sub.prop(ma, "name", text="", emboss=False, icon_value=icon)
-                sub.prop(ma.length_group, "length", text="", emboss=False, icon_value=icon, expand=True)
+                column = sub.column()
+                column.enabled = False
+                column.prop(ma.length_group, "length", text="", emboss=False, icon_value=icon, expand=True)
             else:
                 layout.label(text="", translate=False, icon_value=icon)
         # 'GRID' layout type should be as compact as possible (typically a single icon!).
@@ -66,13 +68,11 @@ class ActionPanel(Panel):
         row.label(text="Final length")
         row.prop(obj, "animation_length", slider=False, text="")
 
-        col = layout.column(align=True)
-        row = col.row(align=True)
-        row.operator(ImportActionOperator.bl_idname, text='Import', icon="IMPORT")
-        row.operator(DeleteItem.bl_idname, text='Delete', icon="REMOVE")
-        row = col.row(align=True)
-        row.operator(MoveItem.bl_idname, text='Up', icon="TRIA_UP").direction = 'UP'
-        row.operator(MoveItem.bl_idname, text='Down', icon="TRIA_DOWN").direction = 'DOWN'
+        col = layout.column_flow(columns=2, align=True)
+        col.operator(ImportActionOperator.bl_idname, text='Import', icon="IMPORT")
+        col.operator(DeleteItem.bl_idname, text='Delete', icon="REMOVE")
+        col.operator(MoveItem.bl_idname, text='Up', icon="TRIA_UP").direction = 'UP'
+        col.operator(MoveItem.bl_idname, text='Down', icon="TRIA_DOWN").direction = 'DOWN'
 
         sublayout = layout.box()
         if obj.active >= 0 and obj.actions:

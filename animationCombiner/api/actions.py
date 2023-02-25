@@ -134,12 +134,10 @@ class Action(bpy.types.PropertyGroup):
         row = layout.row()
         row.enabled = False
         row.prop(self, "path")
-        row = layout.row()
+        row = layout.column_flow(columns=1)
         row.prop(self, "name")
 
-        row = layout.row()
         row.label(text="Animation length settings:")
-        self.length_group.draw(layout.box())
-        row = layout.row()
+        self.length_group.draw(row.box())
         row.label(text="Transition settings:")
-        self.transition.draw(layout.box())
+        self.transition.draw(row.box())
