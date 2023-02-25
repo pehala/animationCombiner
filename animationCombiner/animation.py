@@ -30,15 +30,14 @@ def create_bones(armature: Armature, skeleton: Skeleton, pose: Pose, root: EditB
         create_bone(armature, child, root, pose, skeleton)
 
 
-def create_armature(pose: Pose, skeleton: Skeleton, name: str = "Armature"):
+def create_armature(name: str = "Armature"):
     """Create the entire Armature"""
     bpy.ops.object.armature_add(enter_editmode=True)
     armature = bpy.data.armatures[bpy.context.view_layer.objects.active.name]
-    armature.name = name
     armature.edit_bones.remove(armature.edit_bones.get("Bone"))
-    armature_object = bpy.context.view_layer.objects.active
 
-    create_bones(armature, skeleton, pose)
+    armature_object = bpy.context.view_layer.objects.active
+    armature_object.name = name
 
     # Exit Armature editing
     bpy.ops.object.mode_set(mode="OBJECT", toggle=False)
