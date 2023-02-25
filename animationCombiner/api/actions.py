@@ -100,7 +100,6 @@ class TransitionGroup(bpy.types.PropertyGroup):
 
 class Action(bpy.types.PropertyGroup):
     name: StringProperty(name="Name", default="Unknown")
-    path: StringProperty(name="Path to file")
     length_group: PointerProperty(type=LengthGroup)
     transition: PointerProperty(type=TransitionGroup)
     animation: PointerProperty(type=Animation)
@@ -131,9 +130,6 @@ class Action(bpy.types.PropertyGroup):
         self.animation.copy_from(other.animation)
 
     def draw(self, layout):
-        row = layout.row()
-        row.enabled = False
-        row.prop(self, "path")
         row = layout.column_flow(columns=1)
         row.prop(self, "name")
 
