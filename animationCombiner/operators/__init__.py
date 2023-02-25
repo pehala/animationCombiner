@@ -12,7 +12,7 @@ from animationCombiner.parsers.messif import HDM05MessifLoader
 class CreateExampleOperator(bpy.types.Operator):
     """Creates HBM skeleton as a base"""
     bl_idname = "ac.create_example"
-    bl_label = "Create HBM skeleton"
+    bl_label = "Create empty armature"
 
     @staticmethod
     def run(self, context):
@@ -27,10 +27,7 @@ class CreateExampleOperator(bpy.types.Operator):
         bpy.types.VIEW3D_MT_add.remove(cls.run)
 
     def execute(self, context):
-        with resources.files("animationCombiner.resources").joinpath("test.data").open("r") as file:
-            loader = HDM05MessifLoader(file, "test")
-        animation = loader.load_animation()
-        create_armature(animation.poses[0], animation.skeleton)
+        create_armature(context.scene.armature_name_preset)
         return {"FINISHED"}
 
 

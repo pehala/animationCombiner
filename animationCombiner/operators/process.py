@@ -38,8 +38,10 @@ class ApplyOperator(bpy.types.Operator):
         # Recreate all Bones
         order = skeleton.order()
         bpy.ops.object.mode_set(mode="EDIT", toggle=False)
-        for bone in order:
-            armature_data.edit_bones.remove(armature_data.edit_bones.get(bone))
+        for name in order:
+            bone = armature_data.edit_bones.get(name)
+            if bone is not None:
+                armature_data.edit_bones.remove(armature_data.edit_bones.get(bone))
 
         pose = Pose({
             name: coords.coords for name, coords in zip(order, base_skeleton)

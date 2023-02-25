@@ -8,7 +8,7 @@ from animationCombiner.api.animation import Animation
 
 def on_actions_update(self=None, context=None):
     """Recalculates length of final animation after the actions were updated"""
-    armature = bpy.data.armatures[bpy.context.view_layer.objects.active.name]
+    armature = bpy.context.view_layer.objects.active.data
     length = 0
     for action in armature.actions:
         length += action.length_group.length
