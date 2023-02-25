@@ -55,19 +55,19 @@ def process_animation(armature, action: Action, base_skeleton, frame_start=0, fr
     animation = action.animation
     order = animation.order
 
-    # Set it to base rotation
-    for name, rotation in zip(order, base_skeleton):
-        bone = armature.pose.bones[name]
-        bone.rotation_mode = "QUATERNION"
-        bone.rotation_quaternion = rotation
-        bone.keyframe_insert(
-            data_path="rotation_quaternion",
-            frame=frame_start,
-            group=name,
-        )
+    # # Set it to base rotation
+    # for name, rotation in zip(order, base_skeleton):
+    #     bone = armature.pose.bones[name]
+    #     bone.rotation_mode = "QUATERNION"
+    #     bone.rotation_quaternion = rotation
+    #     bone.keyframe_insert(
+    #         data_path="rotation_quaternion",
+    #         frame=frame_start,
+    #         group=name,
+    #     )
 
     last_frame = frame_start
-    for i, frame in enumerate(animation.animation):
+    for i, frame in enumerate(animation.animation[action.length_group.start:action.length_group.end]):
         last_frame = frame_start + (i * frame_delay)
         for name, rotation in zip(order, frame.rotations):
             bone = armature.pose.bones[name]

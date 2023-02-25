@@ -27,33 +27,37 @@ class ApplyOperator(bpy.types.Operator):
         """
 
         bpy.context.scene.frame_set(bpy.context.scene.frame_start)
-        armature = bpy.data.armatures[bpy.context.view_layer.objects.active.name]
-        base_skeleton = armature.actions[0].animation.skeleton
+        armature = bpy.context.view_layer.objects.active
+        armature_data = armature.data
+        armature.animation_data_clear()
+
+        # Select skeleton from poses
+        base_skeleton = armature_data.actions[0].animation.skeleton
         skeleton = HBMSkeleton()
 
         # Recreate all Bones
         order = skeleton.order()
         bpy.ops.object.mode_set(mode="EDIT", toggle=False)
         for bone in order:
-            armature.edit_bones.remove(armature.edit_bones.get(bone))
+            armature_data.edit_bones.remove(armature_data.edit_bones.get(bone))
 
         pose = Pose({
             name: coords.coords for name, coords in zip(order, base_skeleton)
         })
-        create_bones(armature, skeleton, pose)
+        create_bones(armature_data, skeleton, pose)
         bpy.ops.object.mode_set(mode="POSE", toggle=False)
 
         ending = 0
-        if len(armature.actions) == 0:
+        if len(armature_data.actions) == 0:
             return {"FINISHED"}
 
-        base_skeleton = armature.actions[0].animation.skeleton
+        base_skeleton = armature_data.actions[0].animation.skeleton
         actions = []
-        for action in armature.actions:
+        for action in armature_data.actions:
             actions.append((action, skeleton_diff(base_skeleton, action.animation.skeleton)))
 
         for action, diff in actions:
-            ending = process_animation(bpy.context.view_layer.objects.active, action, diff, frame_start=ending)
+            ending = process_animation(armature, action, diff, frame_start=ending)
         bpy.context.scene.frame_end = ending
-        armature.is_applied = True
+        armature_data.is_applied = True
         return {"FINISHED"}

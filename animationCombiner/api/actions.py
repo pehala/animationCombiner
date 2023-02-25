@@ -29,6 +29,20 @@ class LengthGroup(bpy.types.PropertyGroup):
             self.length = expected
             on_actions_update()
 
+    def update_start(self, context):
+        if self.start > self.length:
+            self.start = self.length
+        if self.start > self.end:
+            self.start = self.end
+        on_actions_update()
+
+    def update_end(self, context):
+        if self.end > self.length:
+            self.end = self.length
+        if self.end < self.start:
+            self.end = self.start
+        on_actions_update()
+
     def copy_from(self, other: "LengthGroup"):
         self.original_length = other.original_length
         self.length = other.length
@@ -37,16 +51,24 @@ class LengthGroup(bpy.types.PropertyGroup):
     original_length: IntProperty(name="Original Length", description="Original Length (in frames)")
     length: IntProperty(name="Length", description="Length (in frames)", update=update_length)
     speed: FloatProperty(name="Speed", description="Speed (compared to original)", default=1, update=update_speed)
+    start: IntProperty(name="start", description="On which frame should the animation start, defaults to 0", default=0, min=0, update=update_start)
+    end: IntProperty(name="end", description="On which frame should the animation end, defaults to last frame", min=0, update=update_end)
 
     def draw(self, layout):
         layout.use_property_split = True
         row = layout.row()
         row.enabled = False
-        row.prop(self, "original_length")
-        row = layout.row()
         row.prop(self, "length")
         row = layout.row()
-        row.prop(self, "speed", slider=False)
+        row.prop(self, "start")
+        row = layout.row()
+        row.prop(self, "end")
+
+        # Hidden as it doesnt work yet
+        # row = layout.row()
+        # row.prop(self, "length")
+        # row = layout.row()
+        # row.prop(self, "speed", slider=False)
 
 
 class TransitionGroup(bpy.types.PropertyGroup):
