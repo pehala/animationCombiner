@@ -24,7 +24,9 @@ class ActionsUIList(bpy.types.UIList):
             if ma:
                 sub = layout.split(factor=0.4, align=True)
                 sub.prop(ma, "name", text="", emboss=False, icon_value=icon)
-                sub.prop(ma.length_group, "length", text="", emboss=False, icon_value=icon, expand=True)
+                column = sub.column()
+                column.enabled = False
+                column.prop(ma.length_group, "length", text="", emboss=False, icon_value=icon, expand=True)
             else:
                 layout.label(text="", translate=False, icon_value=icon)
         # 'GRID' layout type should be as compact as possible (typically a single icon!).
