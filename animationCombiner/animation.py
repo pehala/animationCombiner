@@ -1,90 +1,90 @@
 """Animation processing module"""
+import math
+
 import bpy
 import numpy as np
+from bpy.types import EditBone, Armature
 
-from .api.model import Pose, Bone, Animation
-
-
-def create_bone(armature, joint: Bone):
-    """Create Blender Bone"""
-    bone = armature.data.edit_bones.new(joint.name)
-    if joint.parent:
-        bone.head = joint.parent.pos
-        bone.tail = joint.pos
-        joint.pos = joint.pos
-        bone.parent = joint.parent.bone
-    else:
-        bone.head = np.array((0, 0.1, 0))
-        bone.tail = joint.pos
-        joint.pos = joint.pos
-
-    joint.bone = bone
+from .api.actions import Action
+from .api.model import Pose
+from .api.skeletons import Skeleton
 
 
-def create_armature(pose: Pose):
+def create_bone(armature, name, parent: EditBone, pose: Pose, skeleton: Skeleton):
+    bone = armature.edit_bones.new(name)
+    bone.head = parent.tail
+    bone.tail = pose.bones[name]
+    bone.parent = parent
+
+    for child in skeleton.relations.get(name, []):
+        create_bone(armature, child, bone, pose, skeleton)
+
+
+def create_bones(armature: Armature, skeleton: Skeleton, pose: Pose, root: EditBone = None):
+    if not root:
+        root = armature.edit_bones.new("root")
+        root.head = np.array((0, 0.1, 0))
+        root.tail = pose.bones["root"]
+
+    for child in skeleton.relations["root"]:
+        create_bone(armature, child, root, pose, skeleton)
+
+
+def create_armature(pose: Pose, skeleton: Skeleton, name: str = "Armature"):
     """Create the entire Armature"""
-    armature = bpy.data.armatures.new("Armature")
-    # action = armature.actions.add()
-    # action.name = "Step"
-    # action.value = 1000
-    # action = armature.actions.add()
-    # action.name = "Punch"
-    # action.value = 1000
-    armature_object = bpy.data.objects.new("Armature", armature)
-    # Link armature object to our scene
-    collection = bpy.data.collections.new("My Collection")
-    bpy.context.scene.collection.children.link(collection)
-    layer_collection = bpy.context.view_layer.layer_collection.children[collection.name]
-    bpy.context.view_layer.active_layer_collection = layer_collection
+    bpy.ops.object.armature_add(enter_editmode=True)
+    armature = bpy.data.armatures[bpy.context.view_layer.objects.active.name]
+    armature.name = name
+    armature.edit_bones.remove(armature.edit_bones.get("Bone"))
+    armature_object = bpy.context.view_layer.objects.active
 
-    collection.objects.link(armature_object)
-
-    # Make a coding shortcut
-    armature_data = bpy.data.objects[armature_object.name]
-    bpy.context.view_layer.update()
-
-    # Must make armature active and in edit mode to create a bone
-    bpy.context.view_layer.objects.active = armature_data
-    armature_data.select_set(state=True)
-    bpy.ops.object.mode_set(mode="EDIT", toggle=False)
-
-    queue = [pose.root]
-    while len(queue) > 0:
-        bone = queue.pop()
-        create_bone(armature_data, bone)
-        queue.extend(bone.children)
+    create_bones(armature, skeleton, pose)
 
     # Exit Armature editing
     bpy.ops.object.mode_set(mode="OBJECT", toggle=False)
-    return armature_data
+
+    armature_object.rotation_mode = "XYZ"
+    armature_object.rotation_euler.rotate_axis("X", math.radians(90))
+
+    bpy.ops.object.mode_set(mode='POSE', toggle=False)
+    return armature
 
 
-def process_animation(armature, animation: Animation, frame_delay=1, frame_start=0, reset=False, reset_duraration=10):
+def process_animation(armature, action: Action, base_skeleton, frame_start=0, frame_delay=1):
     """Test"""
-    for name in animation.pose.bones.keys():
+    animation = action.animation
+    order = animation.order
+
+    # Set it to base rotation
+    for name, rotation in zip(order, base_skeleton):
         bone = armature.pose.bones[name]
         bone.rotation_mode = "QUATERNION"
+        bone.rotation_quaternion = rotation
         bone.keyframe_insert(
             data_path="rotation_quaternion",
             frame=frame_start,
+            group=name,
         )
-    last_frame = 0
-    for i, frame in enumerate(animation.transitions):
-        for name, quaternion in frame.bones.items():
+
+    last_frame = frame_start
+    for i, frame in enumerate(animation.animation):
+        last_frame = frame_start + (i * frame_delay)
+        for name, rotation in zip(order, frame.rotations):
             bone = armature.pose.bones[name]
-            bone.rotation_quaternion = quaternion
+            bone.rotation_quaternion = rotation.rotation
             bone.keyframe_insert(
                 data_path="rotation_quaternion",
-                frame=frame_start + (i * frame_delay),
+                frame=last_frame,
+                group=name,
             )
-        last_frame = frame_start + (i * frame_delay)
-    # if reset:
-    #     for name, vector in animation.pose.bones.items():
-    #         bone = armature.pose.bones[name]
-    #         bone.rotation_quaternion = bone.tail.rotation_difference(vector)
-    #         bone.keyframe_insert(
-    #             data_path='rotation_quaternion',
-    #             frame=last_frame + reset_duraration
-    #         )
-    #     last_frame = last_frame + reset_duraration
-    return last_frame + 1
+    if action.transition.reset:
+        last_frame = last_frame + action.transition.reset_length
+        for name, rotation in zip(order, base_skeleton):
+            bone = armature.pose.bones[name]
+            bone.rotation_quaternion = rotation
+            bone.keyframe_insert(
+                data_path='rotation_quaternion',
+                frame=last_frame,
+                group=name,
+            )
+    return last_frame + action.transition.length

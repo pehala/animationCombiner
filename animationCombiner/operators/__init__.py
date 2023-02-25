@@ -1,4 +1,3 @@
-import math
 import typing
 from importlib import resources
 
@@ -30,12 +29,8 @@ class CreateExampleOperator(bpy.types.Operator):
     def execute(self, context):
         with resources.files("animationCombiner.resources").joinpath("test.data").open("r") as file:
             loader = HDM05MessifLoader(file, "test")
-        armature = create_armature(loader.load_skeletons()[0])
-        armature.rotation_mode = "XYZ"
-        armature.rotation_euler.rotate_axis("X", math.radians(90))
-
-        # bpy.ops.wm.context_toggle(data_path="space_data.show_region_ui")
-        bpy.ops.object.mode_set(mode='POSE')
+        animation = loader.load_animation()
+        create_armature(animation.poses[0], animation.skeleton)
         return {"FINISHED"}
 
 
