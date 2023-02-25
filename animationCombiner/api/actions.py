@@ -1,13 +1,12 @@
 from math import ceil
 
 import bpy
-from bpy.app.handlers import persistent
-from bpy.props import IntProperty, FloatProperty, StringProperty, PointerProperty
+from bpy.props import IntProperty, FloatProperty, StringProperty, PointerProperty, BoolProperty
 
-from animationCombiner.parsers import load_animation_from_path
+from animationCombiner.api.animation import Animation
 
 
-def on_actions_update():
+def on_actions_update(self=None, context=None):
     """Recalculates length of final animation after the actions were updated"""
     armature = bpy.data.armatures[bpy.context.view_layer.objects.active.name]
     length = 0
@@ -30,7 +29,7 @@ class LengthGroup(bpy.types.PropertyGroup):
             self.length = expected
             on_actions_update()
 
-    def apply(self, other: "LengthGroup"):
+    def copy_from(self, other: "LengthGroup"):
         self.original_length = other.original_length
         self.length = other.length
         self.speed = other.speed
@@ -50,30 +49,50 @@ class LengthGroup(bpy.types.PropertyGroup):
         row.prop(self, "speed", slider=False)
 
 
-@persistent
-def load_animations(dummy):
-    for armature in bpy.data.armatures:
-        for action in armature.actions:
-            try:
-                action._load_animation()
-            except Exception as e:
-                # TODO: proper error handling
-                print(e)
+class TransitionGroup(bpy.types.PropertyGroup):
+    reset: BoolProperty(
+        name="Reset", description="True, if the pose should reset to the beginning pose", update=on_actions_update
+    )
+    reset_length: IntProperty(name="Reset Length", description="Reset length (in frames)", update=on_actions_update)
+    length: IntProperty(
+        name="Length", description="Transition length (in frames)", default=1, min=1, update=on_actions_update
+    )
+
+    def draw(self, layout):
+        layout.use_property_split = True
+        row = layout.row()
+        row.prop(self, "reset")
+
+        row = layout.row()
+        row.enabled = self.reset
+        row.prop(self, "reset_length")
+
+        row = layout.row()
+        row.prop(self, "length", slider=False)
+
+    def copy_from(self, other: "TransitionGroup"):
+        self.reset = other.reset
+        self.length = other.length
+        self.reset_length = other.reset_length
 
 
 class Action(bpy.types.PropertyGroup):
-
     name: StringProperty(name="Name", default="Unknown")
     path: StringProperty(name="Path to file")
     length_group: PointerProperty(type=LengthGroup)
+    transition: PointerProperty(type=TransitionGroup)
+    animation: PointerProperty(type=Animation)
 
     @classmethod
     def register(cls):
         bpy.types.Armature.actions = bpy.props.CollectionProperty(type=Action)
         bpy.types.Armature.active = bpy.props.IntProperty(name="active", default=0, min=0)
-        bpy.types.Armature.animation_length = bpy.props.IntProperty(name="animationLength", default=0, min=0, description="Final length in frames of the animation")
-        bpy.types.Armature.is_applied = bpy.props.BoolProperty(name="Was apply used", default=False, description="True, if the armature is up-to-date with actions")
-        bpy.app.handlers.load_post.append(load_animations)
+        bpy.types.Armature.animation_length = bpy.props.IntProperty(
+            name="animationLength", default=0, min=0, description="Final length in frames of the animation"
+        )
+        bpy.types.Armature.is_applied = bpy.props.BoolProperty(
+            name="Was apply used", default=False, description="True, if the armature is up-to-date with actions"
+        )
 
     @classmethod
     def unregister(cls):
@@ -81,15 +100,24 @@ class Action(bpy.types.PropertyGroup):
         del bpy.types.Armature.active
         del bpy.types.Armature.animation_length
         del bpy.types.Armature.is_applied
-        bpy.app.handlers.load_post.remove(load_animations)
 
-    def _load_animation(self):
-        self._animation = load_animation_from_path(self.path)
-        self.length_group.original_length = self._animation.length
-        self.length_group.length = self.length_group.original_length
+    def copy_from(self, other: "Action"):
+        self.name = other.name
+        self.path = other.path
+        self.length_group.copy_from(other.length_group)
+        self.transition.copy_from(other.transition)
+        self.animation.copy_from(other.animation)
 
-    @property
-    def animation(self):
-        if not hasattr(self, "_animation") or self._animation is None:
-            self._load_animation()
-        return self._animation
+    def draw(self, layout):
+        row = layout.row()
+        row.enabled = False
+        row.prop(self, "path")
+        row = layout.row()
+        row.prop(self, "name")
+
+        row = layout.row()
+        row.label(text="Animation length settings:")
+        self.length_group.draw(layout.box())
+        row = layout.row()
+        row.label(text="Transition settings:")
+        self.transition.draw(layout.box())

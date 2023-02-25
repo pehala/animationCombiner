@@ -3,7 +3,7 @@ from bpy.props import StringProperty
 from bpy_extras.io_utils import ExportHelper
 from mathutils import Quaternion, Vector
 
-from animationCombiner.api.model import Transition
+from animationCombiner.api.model import Pose, RawAnimation
 from animationCombiner.parsers import find_exporter_for_path
 
 
@@ -37,25 +37,14 @@ class ExportSomeData(bpy.types.Operator, ExportHelper):
         for bone_curves in curves.values():
             bone_curves.sort(key=lambda c: c.array_index)
 
-        # bpy.context.scene.frame_set(bpy.context.scene.frame_start)
-        # transitions = []
-        # for frame in range(bpy.context.scene.frame_start, bpy.context.scene.frame_end):
-        #     bones = {}
-        #     for bone in armature.pose.bones:
-        #         pos = bone.tail.copy()
-        #         pos.rotate(to_quaternion(curves[bone.name], frame))
-        #         bones[bone.name] = pos
-        #     transitions.append(Transition(bones))
         transitions = []
         for frame in range(bpy.context.scene.frame_start, bpy.context.scene.frame_end):
             bpy.context.scene.frame_set(frame)
             bones = {}
             for bone in armature.pose.bones:
-                # pos = bone.tail.copy()
-                # pos.rotate(to_quaternion(curves[bone.name], frame))
                 bones[bone.name] = bone.tail.copy()
-            transitions.append(Transition(bones))
+            transitions.append(Pose(bones))
         bpy.context.scene.frame_set(bpy.context.scene.frame_start)
         with open(self.filepath, "w") as file:
-            exporter.export_animations(transitions, file)
+            exporter.export_animation(RawAnimation(transitions, None), file)
         return {"FINISHED"}

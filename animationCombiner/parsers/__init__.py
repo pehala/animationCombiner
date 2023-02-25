@@ -5,7 +5,7 @@ from os import PathLike
 from pathlib import Path
 from typing import Collection, Type
 
-from animationCombiner.api.model import Animation
+from animationCombiner.api.model import RawAnimation
 
 
 class AnimationLoader(ABC):
@@ -20,20 +20,20 @@ class AnimationLoader(ABC):
         in ideal world, it should be faster than load_animations, because the actual animations will be processed later again.
         """
 
-    def load_animation(self) -> Animation:
+    def load_animation(self) -> RawAnimation:
         """Loads & returns iterable of transition to achieve the animation"""
         return next(iter(self.load_animations()))
 
     @abstractmethod
-    def load_animations(self) -> Collection[Animation]:
+    def load_animations(self) -> Collection[RawAnimation]:
         """Loads & returns initial Skeleton structure"""
 
 
 class AnimationExporter(ABC):
     """Interface for exporting Animations"""
     @abstractmethod
-    def export_animations(self, animations: Collection[Animation], file):
-        """Writes animations to a file"""
+    def export_animation(self, animation: RawAnimation, file):
+        """Writes animation to a file"""
 
 
 PARSERS = {}
@@ -92,7 +92,7 @@ def find_exporter_for_path(path: PathLike) -> Type["AnimationExporter"]:
     return _find_parser_for_path(path, EXPORTERS)
 
 
-def load_animation_from_path(path: PathLike) -> Animation:
+def load_animation_from_path(path: PathLike) -> RawAnimation:
     with open(path, "r") as file:
         return find_parser_for_path(path)(file, path).load_animation()
 

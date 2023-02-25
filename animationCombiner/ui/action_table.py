@@ -78,14 +78,8 @@ class ActionPanel(Panel):
         if obj.active >= 0 and obj.actions:
             item = obj.actions[obj.active]
             col = sublayout.column(align=True)
-            row = col.row()
-            row.enabled = False
-            row.prop(item, "path")
-
-            row = col.row()
-            row.prop(item, "name")
-
-            item.length_group.draw(col)
+            col.row().label(text="Current item:")
+            item.draw(col)
 
         layout.separator()
         col = layout.column()
