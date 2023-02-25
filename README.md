@@ -1,4 +1,8 @@
 # Animation Combiner for Blender
+[![Latest Release](https://img.shields.io/github/v/release/pehala/AnimationCombiner)](https://github.com/pehala/animationCombiner/releases/latest)
+[![License](https://img.shields.io/github/license/pehala/animationCombiner)](https://github.com/pehala/animationCombiner/blob/main/LICENSE)
+
+
 This is a plugin for [Blender](https://www.blender.org/) (3.0+), which simplifies creating animation by combining simple ones through custom UI.
 
 ## Current capabilities
