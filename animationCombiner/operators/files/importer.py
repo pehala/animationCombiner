@@ -31,13 +31,14 @@ class ImportActionOperator(bpy.types.Operator, ImportHelper):
         try:
             path = self.properties.filepath
             raw_animation = load_animation_from_path(path)
-            armature = bpy.data.armatures[bpy.context.view_layer.objects.active.name]
+            armature = bpy.context.view_layer.objects.active.data
             action = armature.actions.add()
 
             action.path = path
             action.animation.from_raw(raw_animation, HBMSkeleton())
             action.length_group.original_length = raw_animation.length
             action.length_group.length = raw_animation.length
+            action.length_group.end = raw_animation.length
             action.name = os.path.basename(path)
             on_actions_update()
             self.report({"INFO"}, "Imported 1 action")
