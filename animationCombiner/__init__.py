@@ -16,7 +16,9 @@ bl_info = {
     "category": "Animation",
 }
 
-PREFERENCES = bpy.context.preferences.addons[__name__].preferences
+
+def get_preferences():
+    return bpy.context.preferences.addons[__name__].preferences
 
 
 def register():
