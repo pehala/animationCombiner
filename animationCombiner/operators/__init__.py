@@ -11,6 +11,7 @@ from animationCombiner.parsers.messif import HDM05MessifLoader
 
 class CreateExampleOperator(bpy.types.Operator):
     """Creates HBM skeleton as a base"""
+
     bl_idname = "ac.create_example"
     bl_label = "Create empty armature"
 
@@ -33,12 +34,14 @@ class CreateExampleOperator(bpy.types.Operator):
 
 class Empty(bpy.types.Operator):
     """Placeholder for some future operator."""
+
     bl_idname = "ac.empty"
     bl_label = "Empty Action"
 
 
 class RunAnimationOperator(bpy.types.Operator):
     """Plays/Stops the animation."""
+
     bl_idname = "ac.run"
     bl_label = "Run Animation"
 
@@ -48,6 +51,7 @@ class RunAnimationOperator(bpy.types.Operator):
 
 class BackToStartOperator(bpy.types.Operator):
     """Returns animation playback to the start."""
+
     bl_idname = "ac.back_to_start"
     bl_label = "Back to start"
 

@@ -12,6 +12,7 @@ def skeleton_diff(base_skeleton, skeleton):
 
 class ApplyOperator(bpy.types.Operator):
     """Applies the actions to the Armature."""
+
     bl_idname = "ac.process"
     bl_label = "Applies all actions to the armature"
 
@@ -43,9 +44,7 @@ class ApplyOperator(bpy.types.Operator):
             if bone is not None:
                 armature_data.edit_bones.remove(armature_data.edit_bones.get(bone))
 
-        pose = Pose({
-            name: coords.coords for name, coords in zip(order, base_skeleton)
-        })
+        pose = Pose({name: coords.coords for name, coords in zip(order, base_skeleton)})
         create_bones(armature_data, skeleton, pose)
         bpy.ops.object.mode_set(mode="POSE", toggle=False)
 

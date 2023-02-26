@@ -4,11 +4,16 @@ import bpy
 from bpy.props import EnumProperty, StringProperty
 from bpy.types import Context
 
-from animationCombiner.operators import RunAnimationOperator, BackToStartOperator, CreateExampleOperator
+from animationCombiner.operators import (
+    RunAnimationOperator,
+    BackToStartOperator,
+    CreateExampleOperator,
+)
 
 
 class MainPanel(bpy.types.Panel):
     """Parent panel for the entire plugin."""
+
     bl_label = "AnimationCombiner"
     bl_idname = "AC_PT_main"
     bl_space_type = "VIEW_3D"
@@ -67,7 +72,9 @@ class SelectPanel(bpy.types.Panel):
 
     @classmethod
     def register(cls):
-        bpy.types.Scene.armature_name_preset = StringProperty(name="Name", description="Name of the new armature", default="Armature")
+        bpy.types.Scene.armature_name_preset = StringProperty(
+            name="Name", description="Name of the new armature", default="Armature"
+        )
 
     @classmethod
     def unregister(cls):

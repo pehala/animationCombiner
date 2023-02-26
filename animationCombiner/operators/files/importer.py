@@ -12,6 +12,7 @@ from animationCombiner.parsers import ParserError, load_animation_from_path, PAR
 
 class ImportActionOperator(bpy.types.Operator, ImportHelper):
     """Imports new action."""
+
     bl_label = "Import file"
     bl_idname = "ac.file_selector"
 

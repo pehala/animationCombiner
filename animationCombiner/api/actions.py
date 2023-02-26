@@ -1,7 +1,13 @@
 from math import ceil
 
 import bpy
-from bpy.props import IntProperty, FloatProperty, StringProperty, PointerProperty, BoolProperty
+from bpy.props import (
+    IntProperty,
+    FloatProperty,
+    StringProperty,
+    PointerProperty,
+    BoolProperty,
+)
 
 from animationCombiner.api.animation import Animation
 
@@ -50,9 +56,25 @@ class LengthGroup(bpy.types.PropertyGroup):
 
     original_length: IntProperty(name="Original Length", description="Original Length (in frames)")
     length: IntProperty(name="Length", description="Length (in frames)", update=update_length)
-    speed: FloatProperty(name="Speed", description="Speed (compared to original)", default=1, update=update_speed)
-    start: IntProperty(name="start", description="On which frame should the animation start, defaults to 0", default=0, min=0, update=update_start)
-    end: IntProperty(name="end", description="On which frame should the animation end, defaults to last frame", min=0, update=update_end)
+    speed: FloatProperty(
+        name="Speed",
+        description="Speed (compared to original)",
+        default=1,
+        update=update_speed,
+    )
+    start: IntProperty(
+        name="start",
+        description="On which frame should the animation start, defaults to 0",
+        default=0,
+        min=0,
+        update=update_start,
+    )
+    end: IntProperty(
+        name="end",
+        description="On which frame should the animation end, defaults to last frame",
+        min=0,
+        update=update_end,
+    )
 
     def draw(self, layout):
         layout.use_property_split = True
@@ -73,11 +95,21 @@ class LengthGroup(bpy.types.PropertyGroup):
 
 class TransitionGroup(bpy.types.PropertyGroup):
     reset: BoolProperty(
-        name="Reset", description="True, if the pose should reset to the beginning pose", update=on_actions_update
+        name="Reset",
+        description="True, if the pose should reset to the beginning pose",
+        update=on_actions_update,
     )
-    reset_length: IntProperty(name="Reset Length", description="Reset length (in frames)", update=on_actions_update)
+    reset_length: IntProperty(
+        name="Reset Length",
+        description="Reset length (in frames)",
+        update=on_actions_update,
+    )
     length: IntProperty(
-        name="Length", description="Transition length (in frames)", default=1, min=1, update=on_actions_update
+        name="Length",
+        description="Transition length (in frames)",
+        default=1,
+        min=1,
+        update=on_actions_update,
     )
 
     def draw(self, layout):
@@ -109,10 +141,15 @@ class Action(bpy.types.PropertyGroup):
         bpy.types.Armature.actions = bpy.props.CollectionProperty(type=Action)
         bpy.types.Armature.active = bpy.props.IntProperty(name="active", default=0, min=0)
         bpy.types.Armature.animation_length = bpy.props.IntProperty(
-            name="animationLength", default=0, min=0, description="Final length in frames of the animation"
+            name="animationLength",
+            default=0,
+            min=0,
+            description="Final length in frames of the animation",
         )
         bpy.types.Armature.is_applied = bpy.props.BoolProperty(
-            name="Was apply used", default=False, description="True, if the armature is up-to-date with actions"
+            name="Was apply used",
+            default=False,
+            description="True, if the armature is up-to-date with actions",
         )
 
     @classmethod

@@ -26,7 +26,14 @@ class ActionsUIList(bpy.types.UIList):
                 sub.prop(ma, "name", text="", emboss=False, icon_value=icon)
                 column = sub.column()
                 column.enabled = False
-                column.prop(ma.length_group, "length", text="", emboss=False, icon_value=icon, expand=True)
+                column.prop(
+                    ma.length_group,
+                    "length",
+                    text="",
+                    emboss=False,
+                    icon_value=icon,
+                    expand=True,
+                )
             else:
                 layout.label(text="", translate=False, icon_value=icon)
         # 'GRID' layout type should be as compact as possible (typically a single icon!).
@@ -69,10 +76,10 @@ class ActionPanel(Panel):
         row.prop(obj, "animation_length", slider=False, text="")
 
         col = layout.column_flow(columns=2, align=True)
-        col.operator(ImportActionOperator.bl_idname, text='Import', icon="IMPORT")
-        col.operator(DeleteItem.bl_idname, text='Delete', icon="REMOVE")
-        col.operator(MoveItem.bl_idname, text='Up', icon="TRIA_UP").direction = 'UP'
-        col.operator(MoveItem.bl_idname, text='Down', icon="TRIA_DOWN").direction = 'DOWN'
+        col.operator(ImportActionOperator.bl_idname, text="Import", icon="IMPORT")
+        col.operator(DeleteItem.bl_idname, text="Delete", icon="REMOVE")
+        col.operator(MoveItem.bl_idname, text="Up", icon="TRIA_UP").direction = "UP"
+        col.operator(MoveItem.bl_idname, text="Down", icon="TRIA_DOWN").direction = "DOWN"
 
         sublayout = layout.box()
         if obj.active >= 0 and obj.actions:
@@ -107,7 +114,7 @@ class DeleteItem(Operator):
         my_list.remove(index)
         context.object.data.active = min(max(0, index - 1), len(my_list) - 1)
         on_actions_update()
-        return {'FINISHED'}
+        return {"FINISHED"}
 
 
 class MoveItem(Operator):
@@ -116,19 +123,23 @@ class MoveItem(Operator):
     bl_idname = "my_list.move_item"
     bl_label = "Move an item in the list"
 
-    direction: bpy.props.EnumProperty(items=(('UP', 'Up', ""),
-                                             ('DOWN', 'Down', ""),))
+    direction: bpy.props.EnumProperty(
+        items=(
+            ("UP", "Up", ""),
+            ("DOWN", "Down", ""),
+        )
+    )
 
     @classmethod
     def poll(cls, context):
         return context.object.data.actions
 
     def move_index(self, context):
-        """ Move index of an item render queue while clamping it. """
+        """Move index of an item render queue while clamping it."""
 
         index = context.object.data.active
         list_length = len(context.object.data.actions) - 1  # (index starts at 0)
-        new_index = index + (-1 if self.direction == 'UP' else 1)
+        new_index = index + (-1 if self.direction == "UP" else 1)
 
         context.object.data.active = max(0, min(new_index, list_length))
         if index != context.object.data.active:
@@ -138,8 +149,8 @@ class MoveItem(Operator):
         my_list = context.object.data.actions
         index = context.object.data.active
 
-        neighbor = index + (-1 if self.direction == 'UP' else 1)
+        neighbor = index + (-1 if self.direction == "UP" else 1)
         my_list.move(neighbor, index)
         self.move_index(context)
 
-        return {'FINISHED'}
+        return {"FINISHED"}

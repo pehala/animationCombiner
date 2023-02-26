@@ -24,7 +24,14 @@ class Rotations(PropertyGroup):
     rotations: CollectionProperty(type=RotationProperty)
 
 
-def calculate_rotation(diff: Quaternion, bone, first: Pose, current: Pose, skeleton: Skeleton, results: dict[str, Quaternion]):
+def calculate_rotation(
+    diff: Quaternion,
+    bone,
+    first: Pose,
+    current: Pose,
+    skeleton: Skeleton,
+    results: dict[str, Quaternion],
+):
     pos = first.bones[bone].copy()
     pos.rotate(diff)
     rotation = current.bones[bone].rotation_difference(pos)

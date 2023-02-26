@@ -13,6 +13,7 @@ def to_quaternion(curves, frame):
 
 class ExportSomeData(bpy.types.Operator, ExportHelper):
     """Exports the animation data. Need to be processed first"""
+
     bl_idname = "ac.export_file"  # important since its how bpy.ops.import_test.some_data is constructed
     bl_label = "Export Animation"
 
@@ -21,7 +22,7 @@ class ExportSomeData(bpy.types.Operator, ExportHelper):
 
     filter_glob: StringProperty(
         default="*.data",
-        options={'HIDDEN'},
+        options={"HIDDEN"},
         maxlen=255,  # Max internal buffer length, longer would be clamped.
     )
 

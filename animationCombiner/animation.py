@@ -45,7 +45,7 @@ def create_armature(name: str = "Armature"):
     armature_object.rotation_mode = "XYZ"
     armature_object.rotation_euler.rotate_axis("X", math.radians(90))
 
-    bpy.ops.object.mode_set(mode='POSE', toggle=False)
+    bpy.ops.object.mode_set(mode="POSE", toggle=False)
     return armature
 
 
@@ -66,7 +66,7 @@ def process_animation(armature, action: Action, base_skeleton, frame_start=0, fr
     #     )
 
     last_frame = frame_start
-    for i, frame in enumerate(animation.animation[action.length_group.start:action.length_group.end]):
+    for i, frame in enumerate(animation.animation[action.length_group.start : action.length_group.end]):
         last_frame = frame_start + (i * frame_delay)
         for name, rotation in zip(order, frame.rotations):
             bone = armature.pose.bones[name]
@@ -82,7 +82,7 @@ def process_animation(armature, action: Action, base_skeleton, frame_start=0, fr
             bone = armature.pose.bones[name]
             bone.rotation_quaternion = rotation
             bone.keyframe_insert(
-                data_path='rotation_quaternion',
+                data_path="rotation_quaternion",
                 frame=last_frame,
                 group=name,
             )

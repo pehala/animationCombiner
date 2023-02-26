@@ -28,4 +28,3 @@ def register():
 def unregister():
     """Unregister all custom classes"""
     registry.unregister()
-

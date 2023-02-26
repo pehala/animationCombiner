@@ -6,7 +6,12 @@ import numpy
 import numpy as np
 from mathutils import Vector
 
-from animationCombiner.parsers import AnimationLoader, AnimationExporter, register_parser, register_exporter
+from animationCombiner.parsers import (
+    AnimationLoader,
+    AnimationExporter,
+    register_parser,
+    register_exporter,
+)
 from animationCombiner.api.skeletons import HBMSkeleton
 from animationCombiner.api.model import Pose, RawAnimation
 
