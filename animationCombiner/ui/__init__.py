@@ -1,13 +1,11 @@
-from typing import Set
-
 import bpy
-from bpy.props import EnumProperty, StringProperty
+from bpy.props import StringProperty
 from bpy.types import Context
 
 from animationCombiner.operators import (
     RunAnimationOperator,
     BackToStartOperator,
-    CreateExampleOperator,
+    CreateArmatureOperator,
 )
 
 
@@ -84,7 +82,7 @@ class SelectPanel(bpy.types.Panel):
         row = self.layout.row()
         # operator = row.operator(CreateExampleOperator.bl_idname, text="Create Armature")
         row.prop(bpy.context.scene, "armature_name_preset")
-        row.operator(CreateExampleOperator.bl_idname, text="Create Armature")
+        row.operator(CreateArmatureOperator.bl_idname, text="Create Armature")
 
         row = self.layout.row()
         row.label(text="Select: ")

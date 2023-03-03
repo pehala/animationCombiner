@@ -1,4 +1,5 @@
 import bpy
+from bpy.props import CollectionProperty
 from bpy.types import Operator, Panel
 
 from animationCombiner.api.actions import on_actions_update
@@ -6,6 +7,7 @@ from animationCombiner.operators.files.export import ExportSomeData
 from animationCombiner.operators.files.importer import ImportActionOperator
 from animationCombiner.operators.process import ApplyOperator
 from animationCombiner.ui import MainPanel
+from animationCombiner.ui.table_controls import BaseControlsMixin, BaseDeleteItem, BaseMoveItem
 
 
 class ActionsUIList(bpy.types.UIList):
@@ -66,7 +68,7 @@ class ActionPanel(Panel):
         row = layout.row().split(factor=0.4, align=True)
         row.label(text="Name")
         row.label(text="Length")
-        layout.template_list(ActionsUIList.bl_idname, "", obj, "actions", obj, "active")
+        layout.template_list(ActionsUIList.bl_idname, "", obj, "actions", obj, "active", sort_lock=True)
         layout.separator()
 
         col = layout.column()
@@ -77,9 +79,9 @@ class ActionPanel(Panel):
 
         col = layout.column_flow(columns=2, align=True)
         col.operator(ImportActionOperator.bl_idname, text="Import", icon="IMPORT")
-        col.operator(DeleteItem.bl_idname, text="Delete", icon="REMOVE")
-        col.operator(MoveItem.bl_idname, text="Up", icon="TRIA_UP").direction = "UP"
-        col.operator(MoveItem.bl_idname, text="Down", icon="TRIA_DOWN").direction = "DOWN"
+        col.operator(ActionDeleteItem.bl_idname, text="Delete", icon="REMOVE")
+        col.operator(ActionMoveItem.bl_idname, text="Up", icon="TRIA_UP").direction = "UP"
+        col.operator(ActionMoveItem.bl_idname, text="Down", icon="TRIA_DOWN").direction = "DOWN"
 
         sublayout = layout.box()
         if obj.active >= 0 and obj.actions:
@@ -97,60 +99,33 @@ class ActionPanel(Panel):
         row.operator(ExportSomeData.bl_idname, text="Export", icon="EXPORT")
 
 
-class DeleteItem(Operator):
-    """Deletes the selected action."""
+class ActionControlsMixin(BaseControlsMixin):
+    """Specific Control class for ActionList"""
 
-    bl_idname = "my_list.delete_item"
-    bl_label = "Deletes an item"
+    @property
+    def active(self):
+        return bpy.context.object.data.active
 
-    @classmethod
-    def poll(cls, context):
-        return context.object.data.actions
+    @active.setter
+    def active(self, active):
+        bpy.context.object.data.active = active
 
-    def execute(self, context):
-        my_list = context.object.data.actions
-        index = context.object.data.active
+    @property
+    def callback(self):
+        return on_actions_update
 
-        my_list.remove(index)
-        context.object.data.active = min(max(0, index - 1), len(my_list) - 1)
-        on_actions_update()
-        return {"FINISHED"}
+    @property
+    def list(self) -> CollectionProperty:
+        return bpy.context.object.data.actions
 
 
-class MoveItem(Operator):
-    """Moves the selected action up/down."""
+class ActionDeleteItem(ActionControlsMixin, BaseDeleteItem, Operator):
+    """Delete Item Operator for ActionList"""
 
-    bl_idname = "my_list.move_item"
-    bl_label = "Move an item in the list"
+    bl_idname = "ac.actions_delete_item"
 
-    direction: bpy.props.EnumProperty(
-        items=(
-            ("UP", "Up", ""),
-            ("DOWN", "Down", ""),
-        )
-    )
 
-    @classmethod
-    def poll(cls, context):
-        return context.object.data.actions
+class ActionMoveItem(ActionControlsMixin, BaseMoveItem, Operator):
+    """Move Item Operator for ActionList"""
 
-    def move_index(self, context):
-        """Move index of an item render queue while clamping it."""
-
-        index = context.object.data.active
-        list_length = len(context.object.data.actions) - 1  # (index starts at 0)
-        new_index = index + (-1 if self.direction == "UP" else 1)
-
-        context.object.data.active = max(0, min(new_index, list_length))
-        if index != context.object.data.active:
-            on_actions_update()
-
-    def execute(self, context):
-        my_list = context.object.data.actions
-        index = context.object.data.active
-
-        neighbor = index + (-1 if self.direction == "UP" else 1)
-        my_list.move(neighbor, index)
-        self.move_index(context)
-
-        return {"FINISHED"}
+    bl_idname = "ac.actions_move_item"
