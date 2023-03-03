@@ -7,9 +7,13 @@ from bpy.props import (
     StringProperty,
     PointerProperty,
     BoolProperty,
+    CollectionProperty,
 )
 
+from animationCombiner import get_preferences
 from animationCombiner.api.animation import Animation
+from animationCombiner.api.body_parts import BodyPartsConfiguration
+from animationCombiner.utils import copy
 
 
 def on_actions_update(self=None, context=None):
@@ -130,6 +134,11 @@ class TransitionGroup(bpy.types.PropertyGroup):
         self.reset_length = other.reset_length
 
 
+def get_body_parts(self):
+    if len(self.body_parts.body_parts) == 0:
+        copy(get_preferences().active_config, self.body_parts)
+
+
 class Action(bpy.types.PropertyGroup):
     name: StringProperty(name="Name", default="Unknown")
     length_group: PointerProperty(type=LengthGroup)
@@ -138,15 +147,17 @@ class Action(bpy.types.PropertyGroup):
 
     @classmethod
     def register(cls):
-        bpy.types.Armature.actions = bpy.props.CollectionProperty(type=Action)
-        bpy.types.Armature.active = bpy.props.IntProperty(name="active", default=0, min=0)
-        bpy.types.Armature.animation_length = bpy.props.IntProperty(
+        bpy.types.Armature.actions = CollectionProperty(type=Action)
+        bpy.types.Armature.active = IntProperty(name="active", default=0, min=0)
+        bpy.types.Armature.body_parts = PointerProperty(type=BodyPartsConfiguration)
+        bpy.types.Armature.get_body_parts = get_body_parts
+        bpy.types.Armature.animation_length = IntProperty(
             name="animationLength",
             default=0,
             min=0,
             description="Final length in frames of the animation",
         )
-        bpy.types.Armature.is_applied = bpy.props.BoolProperty(
+        bpy.types.Armature.is_applied = BoolProperty(
             name="Was apply used",
             default=False,
             description="True, if the armature is up-to-date with actions",
@@ -156,12 +167,12 @@ class Action(bpy.types.PropertyGroup):
     def unregister(cls):
         del bpy.types.Armature.actions
         del bpy.types.Armature.active
+        del bpy.types.Armature.body_parts
         del bpy.types.Armature.animation_length
         del bpy.types.Armature.is_applied
 
     def copy_from(self, other: "Action"):
         self.name = other.name
-        self.path = other.path
         self.length_group.copy_from(other.length_group)
         self.transition.copy_from(other.transition)
         self.animation.copy_from(other.animation)

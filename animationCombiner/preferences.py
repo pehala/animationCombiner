@@ -66,7 +66,7 @@ class AnimationCombinerPreferences(AddonPreferences):
         # layout.prop(self, "toggle_side_menu")
 
     @property
-    def body_parts(self):
+    def active_config(self):
         # self.body_parts_config.clear()
         if len(self.body_parts_config) == 0:
             config = self.body_parts_config.add()
@@ -76,7 +76,11 @@ class AnimationCombinerPreferences(AddonPreferences):
                 for bone_name in bones:
                     bone = body_part.bones.add()
                     bone.bone = bone_name
-        return self.body_parts_config[self.bone_parts_active].body_parts
+        return self.body_parts_config[self.bone_parts_active]
+
+    @property
+    def body_parts(self):
+        return self.active_config.body_parts
 
 
 # Body Part controls
@@ -113,6 +117,9 @@ class DeleteBodyPart(Operator):
     body_part: StringProperty()
 
     def execute(self, context):
+        if len(get_preferences().body_parts) == 1:
+            self.report({"ERROR"}, "You cannot delete last body part")
+            return {"CANCELLED"}
         for index, body_part in enumerate(get_preferences().body_parts):
             if body_part.name == self.body_part:
                 get_preferences().body_parts.remove(index)

@@ -1,5 +1,5 @@
 import bpy
-from bpy.props import CollectionProperty, EnumProperty
+from bpy.props import CollectionProperty
 from bpy.types import Operator, Panel
 
 from animationCombiner.api.actions import on_actions_update

@@ -1,15 +1,13 @@
 import typing
-from importlib import resources
 
 import bpy
 from bpy.props import StringProperty
 from bpy.types import Context
 
 from animationCombiner.animation import create_armature
-from animationCombiner.parsers.messif import HDM05MessifLoader
 
 
-class CreateExampleOperator(bpy.types.Operator):
+class CreateArmatureOperator(bpy.types.Operator):
     """Creates HBM skeleton as a base"""
 
     bl_idname = "ac.create_example"
@@ -17,7 +15,7 @@ class CreateExampleOperator(bpy.types.Operator):
 
     @staticmethod
     def run(self, context):
-        self.layout.operator(CreateExampleOperator.bl_idname)
+        self.layout.operator(CreateArmatureOperator.bl_idname)
 
     @classmethod
     def register(cls):
