@@ -53,11 +53,6 @@ class LengthGroup(bpy.types.PropertyGroup):
             self.end = self.start
         on_actions_update()
 
-    def copy_from(self, other: "LengthGroup"):
-        self.original_length = other.original_length
-        self.length = other.length
-        self.speed = other.speed
-
     original_length: IntProperty(name="Original Length", description="Original Length (in frames)")
     length: IntProperty(name="Length", description="Length (in frames)", update=update_length)
     speed: FloatProperty(
@@ -128,15 +123,19 @@ class TransitionGroup(bpy.types.PropertyGroup):
         row = layout.row()
         row.prop(self, "length", slider=False)
 
-    def copy_from(self, other: "TransitionGroup"):
-        self.reset = other.reset
-        self.length = other.length
-        self.reset_length = other.reset_length
-
 
 def get_body_parts(self):
     if len(self.body_parts.body_parts) == 0:
         copy(get_preferences().active_config, self.body_parts)
+        for action in self.actions:
+            action.regenerate_parts(self.body_parts)
+    return self.body_parts
+
+
+class BoolPropertyCollection(bpy.types.PropertyGroup):
+    checked: BoolProperty(name="", default=True)
+    name: StringProperty()
+    uuid: StringProperty()
 
 
 class Action(bpy.types.PropertyGroup):
@@ -144,6 +143,7 @@ class Action(bpy.types.PropertyGroup):
     length_group: PointerProperty(type=LengthGroup)
     transition: PointerProperty(type=TransitionGroup)
     animation: PointerProperty(type=Animation)
+    body_parts: CollectionProperty(type=BoolPropertyCollection)
 
     @classmethod
     def register(cls):
@@ -171,11 +171,13 @@ class Action(bpy.types.PropertyGroup):
         del bpy.types.Armature.animation_length
         del bpy.types.Armature.is_applied
 
-    def copy_from(self, other: "Action"):
-        self.name = other.name
-        self.length_group.copy_from(other.length_group)
-        self.transition.copy_from(other.transition)
-        self.animation.copy_from(other.animation)
+    def regenerate_parts(self, config: BodyPartsConfiguration):
+        # TODO reuse existing config
+        self.body_parts.clear()
+        for part in config.body_parts:
+            new_part = self.body_parts.add()
+            new_part.name = part.name
+            new_part.uuid = part.get_uuid()
 
     def draw(self, layout):
         row = layout.column_flow(columns=1)
@@ -185,3 +187,7 @@ class Action(bpy.types.PropertyGroup):
         self.length_group.draw(row.box())
         row.label(text="Transition settings:")
         self.transition.draw(row.box())
+        row.label(text="Body Parts settings:")
+        box = row.box().column_flow(columns=2, align=True)
+        for part in self.body_parts:
+            box.prop(part, "checked", text=part.name)

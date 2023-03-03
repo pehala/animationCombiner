@@ -34,7 +34,7 @@ class ImportActionOperator(bpy.types.Operator, ImportHelper):
             raw_animation = load_animation_from_path(path)
             armature = bpy.context.view_layer.objects.active.data
             action = armature.actions.add()
-
+            action.regenerate_parts(armature.get_body_parts())
             action.animation.from_raw(raw_animation, HBMSkeleton())
             action.length_group.original_length = raw_animation.length
             action.length_group.length = raw_animation.length
