@@ -1,7 +1,7 @@
 import bpy
 from bpy.types import UIList, Operator, CollectionProperty, Panel, Context
 
-from animationCombiner.api.actions import on_actions_update
+from animationCombiner.utils import on_actions_update
 from animationCombiner.ui.action import ActionPanel
 from animationCombiner.ui.table_controls import BaseControlsMixin, BaseDeleteItem, BaseMoveItem
 
@@ -71,7 +71,7 @@ class AddGroupOperator(GroupsControlsMixin, Operator):
 
     def execute(self, context):
         group = self.list.add()
-        group.name = "New group"
+        group.name = f"Group {len(self.list)}"
 
         return {"FINISHED"}
 

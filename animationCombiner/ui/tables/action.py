@@ -2,7 +2,7 @@ import bpy
 from bpy.props import CollectionProperty, IntProperty
 from bpy.types import Operator, UIList, Panel, Context, Menu
 
-from animationCombiner.api.actions import on_actions_update
+from animationCombiner.utils import on_actions_update
 from animationCombiner.operators import SelectGroupOperator, MoveActionToGroupOperator
 from animationCombiner.operators.files.importer import ImportActionOperator
 from animationCombiner.ui.action import ActionPanel

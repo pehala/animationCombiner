@@ -14,30 +14,8 @@ from bpy.types import PropertyGroup
 from animationCombiner import get_preferences
 from animationCombiner.api.animation import Animation
 from animationCombiner.api.body_parts import BodyPartsConfiguration
-from animationCombiner.utils import copy
-
-
-def on_actions_update(self=None, context=None):
-    """Recalculates length of final animation after the actions were updated"""
-    armature = bpy.context.view_layer.objects.active.data
-    length = 0
-    for group in armature.groups:
-        group.errors.clear()
-        group_length = 0
-        parts = set()
-        for action in group.actions:
-            group_length = max(action.length_group.length, group_length)
-            for part in action.body_parts:
-                if part.checked:
-                    if part.uuid in parts:
-                        group.add_error("COLLIDING_PARTS")
-                        break
-                    parts.add(part.uuid)
-        group.length = group_length
-        group.actions_count = len(group.actions)
-        length += group_length
-    armature.animation_length = length
-    armature.is_applied = False
+from animationCombiner.operators import SelectAllPartsOperator, SelectNoPartsOperator
+from animationCombiner.utils import copy, on_actions_update
 
 
 class LengthGroup(bpy.types.PropertyGroup):
@@ -165,6 +143,9 @@ class Action(PropertyGroup):
         for part in self.body_parts:
             columns.prop(part, "checked", text=part.name)
             one_checked = one_checked or part.checked
+        row = box.row(align=True)
+        row.operator(SelectNoPartsOperator.bl_idname, text="Deselect All")
+        row.operator(SelectAllPartsOperator.bl_idname, text="Select All")
         if not one_checked:
             box.label(text="No body parts are checked! This actions won't be applied!", icon="ERROR")
 

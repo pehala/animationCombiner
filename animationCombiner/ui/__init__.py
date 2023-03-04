@@ -6,9 +6,9 @@ from animationCombiner.api.actions import GroupErrors
 from animationCombiner.operators import (
     RunAnimationOperator,
     BackToStartOperator,
-    CreateArmatureOperator,
     SelectObjectOperator,
 )
+from animationCombiner.operators.armature import CreateArmatureOperator
 from animationCombiner.operators.files.export import ExportSomeData
 from animationCombiner.operators.process import ApplyOperator
 

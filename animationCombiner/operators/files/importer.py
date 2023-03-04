@@ -5,7 +5,7 @@ import bpy
 from bpy.props import StringProperty
 from bpy_extras.io_utils import ImportHelper
 
-from animationCombiner.api.actions import on_actions_update
+from animationCombiner.utils import on_actions_update
 from animationCombiner.api.skeletons import HBMSkeleton
 from animationCombiner.parsers import ParserError, load_animation_from_path, PARSERS
 

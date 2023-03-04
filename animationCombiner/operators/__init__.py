@@ -4,32 +4,7 @@ import bpy
 from bpy.props import StringProperty
 from bpy.types import Context
 
-from animationCombiner.animation import create_armature
-from animationCombiner.api.actions import on_actions_update
-from animationCombiner.utils import copy
-
-
-class CreateArmatureOperator(bpy.types.Operator):
-    """Creates HBM skeleton as a base"""
-
-    bl_idname = "ac.create_example"
-    bl_label = "Create empty armature"
-
-    @staticmethod
-    def run(self, context):
-        self.layout.operator(CreateArmatureOperator.bl_idname)
-
-    @classmethod
-    def register(cls):
-        bpy.types.VIEW3D_MT_add.prepend(cls.run)
-
-    @classmethod
-    def unregister(cls):
-        bpy.types.VIEW3D_MT_add.remove(cls.run)
-
-    def execute(self, context):
-        create_armature(context.scene.armature_name_preset)
-        return {"FINISHED"}
+from animationCombiner.utils import copy, on_actions_update
 
 
 class Empty(bpy.types.Operator):
@@ -107,3 +82,31 @@ class SelectGroupOperator(bpy.types.Operator):
                 return {"FINISHED"}
         self.report({"ERROR"}, f"Unable to find group called {self.name}")
         return {"CANCELLED"}
+
+
+class SelectAllPartsOperator(bpy.types.Operator):
+    """Selects all body parts"""
+
+    bl_idname = "ac.select_all_parts"
+    bl_label = "Selects all body parts"
+
+    def execute(self, context: Context) -> typing.Set[str]:
+        group = context.object.data.groups[context.object.data.active]
+        action = group.actions[group.active]
+        for part in action.body_parts:
+            part.checked = True
+        return {"FINISHED"}
+
+
+class SelectNoPartsOperator(bpy.types.Operator):
+    """Selects no body parts"""
+
+    bl_idname = "ac.select_no_parts"
+    bl_label = "Selects no body parts"
+
+    def execute(self, context: Context) -> typing.Set[str]:
+        group = context.object.data.groups[context.object.data.active]
+        action = group.actions[group.active]
+        for part in action.body_parts:
+            part.checked = False
+        return {"FINISHED"}
