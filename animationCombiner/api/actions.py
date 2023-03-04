@@ -147,7 +147,7 @@ class Action(PropertyGroup):
         row.operator(SelectNoPartsOperator.bl_idname, text="Deselect All")
         row.operator(SelectAllPartsOperator.bl_idname, text="Select All")
         if not one_checked:
-            box.label(text="No body parts are checked! This actions won't be applied!", icon="ERROR")
+            box.label(text="No body parts are checked! This action won't be applied!", icon="ERROR")
 
 
 class GroupErrors(PropertyGroup):
@@ -158,10 +158,6 @@ class GroupErrors(PropertyGroup):
         def convert(cls):
             return [(e.name, *e.value, i) for i, e in enumerate(cls)]
 
-    # ITEMS = [
-    #     ("COLLIDING_PARTS", "Body parts are not unique", "Multiple actions apply to the same body parts", "", 1),
-    #     # ("COLLIDING_PARTS", "Body parts are not unique", "Multiple actions apply to the same body parts", "", 1),
-    # ]
     error: EnumProperty(items=Errors.convert())
 
 
