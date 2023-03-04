@@ -10,7 +10,7 @@ from animationCombiner.parsers import (
     register_parser,
     register_exporter,
 )
-from animationCombiner.api.skeletons import HBMSkeleton
+from animationCombiner.api.skeletons import HDMSkeleton
 from animationCombiner.api.model import Pose, RawAnimation
 
 
@@ -108,7 +108,7 @@ class HDM05MessifLoader(MessifLoader):
     ]
 
     def __init__(self, file, path) -> None:
-        super().__init__(self.NAMES, HBMSkeleton(), file, path)
+        super().__init__(self.NAMES, HDMSkeleton(), file, path)
 
 
 @register_exporter(extensions={".data"})
