@@ -1,5 +1,3 @@
-import re
-from os import PathLike
 from typing import Collection
 
 import numpy

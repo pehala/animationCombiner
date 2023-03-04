@@ -3,7 +3,7 @@ from bpy.types import AddonPreferences, UIList, Operator
 
 from animationCombiner import get_preferences
 from animationCombiner.api.body_parts import BodyPartsConfiguration
-from animationCombiner.ui.table_controls import BaseControlsMixin, BaseDeleteItem, BaseMoveItem
+from animationCombiner.ui.table_controls import BaseControlsMixin, BaseDeleteItem
 
 
 class BodyPartsUIList(UIList):
