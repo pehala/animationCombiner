@@ -12,11 +12,10 @@ class BaseControlsMixin:
 
     @active.setter
     def active(self, active):
-        """"""
+        pass
 
-    @property
-    def callback(self) -> Callable:
-        return False
+    def callback(self):
+        pass
 
     @property
     def list(self) -> CollectionProperty:
@@ -33,8 +32,7 @@ class BaseDeleteItem(BaseControlsMixin):
 
         self.list.remove(index)
         self.active = min(max(0, index - 1), len(self.list) - 1)
-        if self.callback:
-            self.callback()
+        self.callback()
         return {"FINISHED"}
 
 
@@ -58,7 +56,7 @@ class BaseMoveItem(BaseControlsMixin):
         new_index = index + (-1 if self.direction == "UP" else 1)
 
         self.active = max(0, min(new_index, list_length))
-        if index != self.active and self.callback:
+        if index != self.active:
             self.callback()
 
     def execute(self, context):
