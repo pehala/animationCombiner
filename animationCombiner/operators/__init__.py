@@ -47,6 +47,8 @@ class SelectObjectOperator(bpy.types.Operator):
 
 
 class MoveActionToGroupOperator(bpy.types.Operator):
+    """Moves Action to a different Group"""
+
     bl_idname = "ac.move_action_group"
     bl_label = "Move action to specific group"
 
@@ -69,6 +71,8 @@ class MoveActionToGroupOperator(bpy.types.Operator):
 
 
 class SelectGroupOperator(bpy.types.Operator):
+    """Selects group to which the action should move"""
+
     bl_idname = "ac.select_action_group"
     bl_label = "Select group to which the action will be moved"
 
