@@ -25,7 +25,7 @@ class ActionsUIList(UIList):
             if ma:
                 sub = layout.split(factor=0.4, align=True)
                 sub.prop(ma, "name", text="", emboss=False, icon_value=icon)
-                column = sub.column()
+                column = sub.column(align=True)
                 column.enabled = False
                 column.prop(
                     ma.length_group,

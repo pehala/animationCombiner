@@ -15,8 +15,9 @@ class GroupsUIList(UIList):
         # draw_item must handle the three layout types... Usually 'DEFAULT' and 'COMPACT' can share the same code.
         if self.layout_type in {"DEFAULT", "COMPACT"}:
             if ma:
-                layout.prop(ma, "name", text="", emboss=False, icon="ERROR" if ma.errors else "NONE")
-                column = layout.column()
+                row = layout.row(align=True)
+                row.prop(ma, "name", text="", emboss=False, icon="ERROR" if ma.errors else "NONE", expand=True)
+                column = row.column(align=True)
                 column.enabled = False
                 column.prop(
                     ma,
@@ -24,9 +25,9 @@ class GroupsUIList(UIList):
                     text="",
                     emboss=False,
                     icon_value=icon,
-                    expand=True,
+                    expand=False,
                 )
-                column = layout.column()
+                column = layout.column(align=True)
                 column.enabled = False
                 column.prop(
                     ma,
@@ -34,7 +35,7 @@ class GroupsUIList(UIList):
                     text="",
                     emboss=False,
                     icon_value=icon,
-                    expand=True,
+                    expand=False,
                 )
             else:
                 layout.label(text="", translate=False, icon_value=icon)
@@ -109,12 +110,14 @@ class GroupListPanel(Panel):
         obj = context.object.data
 
         row = layout.row(align=True)
-        row.enabled = False
         row.label(text="Final length")
-        row.prop(obj, "animation_length", slider=False, text="")
+        col = row.column()
+        col.enabled = False
+        col.prop(obj, "animation_length", slider=False, text="")
 
-        row = layout.row().split(factor=0.4, align=True)
+        row = layout.row(align=True)
         row.label(text="Name")
+        row.label(text="Actions")
         row.label(text="Length")
         layout.template_list(GroupsUIList.bl_idname, "", obj, "groups", obj, "active", sort_lock=True)
         layout.separator()
