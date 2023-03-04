@@ -36,7 +36,7 @@ class ImportActionOperator(bpy.types.Operator, ImportHelper):
 
     def invoke(self, context, _event):
         self.filter_glob = "*" + ";*".join(PARSERS.keys())
-        self.generate_parts(bpy.context.view_layer.objects.active.data.body_parts)
+        self.generate_parts(bpy.context.view_layer.objects.active.data.get_body_parts())
         return super().invoke(context, _event)
 
     def execute(self, context):
