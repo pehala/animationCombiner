@@ -4,7 +4,6 @@ from functools import partial
 from os import PathLike
 from pathlib import Path
 from typing import Collection, Type
-
 from animationCombiner.api.model import RawAnimation
 
 
@@ -34,7 +33,7 @@ class AnimationExporter(ABC):
     """Interface for exporting Animations"""
 
     @abstractmethod
-    def export_animation(self, animation: RawAnimation, file):
+    def export_animation(self, animation: RawAnimation, disabled_bones: Collection[str], file):
         """Writes animation to a file"""
 
 
