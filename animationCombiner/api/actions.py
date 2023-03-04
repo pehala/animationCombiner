@@ -1,14 +1,15 @@
-from math import ceil
+from enum import Enum
 
 import bpy
 from bpy.props import (
     IntProperty,
-    FloatProperty,
     StringProperty,
     PointerProperty,
     BoolProperty,
     CollectionProperty,
+    EnumProperty,
 )
+from bpy.types import PropertyGroup
 
 from animationCombiner import get_preferences
 from animationCombiner.api.animation import Animation
@@ -20,25 +21,26 @@ def on_actions_update(self=None, context=None):
     """Recalculates length of final animation after the actions were updated"""
     armature = bpy.context.view_layer.objects.active.data
     length = 0
-    for action in armature.actions:
-        length += action.length_group.length
+    for group in armature.groups:
+        group.errors.clear()
+        group_length = 0
+        parts = set()
+        for action in group.actions:
+            group_length = max(action.length_group.length, group_length)
+            for part in action.body_parts:
+                if part.checked:
+                    if part.uuid in parts:
+                        group.add_error("COLLIDING_PARTS")
+                        break
+                    parts.add(part.uuid)
+        group.length = group_length
+        group.actions_count = len(group.actions)
+        length += group_length
     armature.animation_length = length
     armature.is_applied = False
 
 
 class LengthGroup(bpy.types.PropertyGroup):
-    def update_length(self, context):
-        expected = self.length / self.original_length
-        if self.speed != expected:
-            self.speed = expected
-            on_actions_update()
-
-    def update_speed(self, context):
-        expected = ceil(self.original_length * self.speed)
-        if self.length != expected:
-            self.length = expected
-            on_actions_update()
-
     def update_start(self, context):
         if self.start > self.length:
             self.start = self.length
@@ -54,13 +56,7 @@ class LengthGroup(bpy.types.PropertyGroup):
         on_actions_update()
 
     original_length: IntProperty(name="Original Length", description="Original Length (in frames)")
-    length: IntProperty(name="Length", description="Length (in frames)", update=update_length)
-    speed: FloatProperty(
-        name="Speed",
-        description="Speed (compared to original)",
-        default=1,
-        update=update_speed,
-    )
+    length: IntProperty(name="Length", description="Length (in frames)")
     start: IntProperty(
         name="start",
         description="On which frame should the animation start, defaults to 0",
@@ -88,8 +84,6 @@ class LengthGroup(bpy.types.PropertyGroup):
         # Hidden as it doesnt work yet
         # row = layout.row()
         # row.prop(self, "length")
-        # row = layout.row()
-        # row.prop(self, "speed", slider=False)
 
 
 class TransitionGroup(bpy.types.PropertyGroup):
@@ -127,49 +121,26 @@ class TransitionGroup(bpy.types.PropertyGroup):
 def get_body_parts(self):
     if len(self.body_parts.body_parts) == 0:
         copy(get_preferences().active_config, self.body_parts)
-        for action in self.actions:
-            action.regenerate_parts(self.body_parts)
+        for group in self.groups:
+            for action in group.actions:
+                action.regenerate_parts(self.body_parts)
     return self.body_parts
 
 
-class BoolPropertyCollection(bpy.types.PropertyGroup):
-    checked: BoolProperty(name="", default=True)
+class EnabledPartsCollection(bpy.types.PropertyGroup):
+    checked: BoolProperty(name="", default=True, update=on_actions_update)
     name: StringProperty()
     uuid: StringProperty()
 
 
-class Action(bpy.types.PropertyGroup):
+class Action(PropertyGroup):
+    """Single action that will be applied"""
+
     name: StringProperty(name="Name", default="Unknown")
     length_group: PointerProperty(type=LengthGroup)
     transition: PointerProperty(type=TransitionGroup)
     animation: PointerProperty(type=Animation)
-    body_parts: CollectionProperty(type=BoolPropertyCollection)
-
-    @classmethod
-    def register(cls):
-        bpy.types.Armature.actions = CollectionProperty(type=Action)
-        bpy.types.Armature.active = IntProperty(name="active", default=0, min=0)
-        bpy.types.Armature.body_parts = PointerProperty(type=BodyPartsConfiguration)
-        bpy.types.Armature.get_body_parts = get_body_parts
-        bpy.types.Armature.animation_length = IntProperty(
-            name="animationLength",
-            default=0,
-            min=0,
-            description="Final length in frames of the animation",
-        )
-        bpy.types.Armature.is_applied = BoolProperty(
-            name="Was apply used",
-            default=False,
-            description="True, if the armature is up-to-date with actions",
-        )
-
-    @classmethod
-    def unregister(cls):
-        del bpy.types.Armature.actions
-        del bpy.types.Armature.active
-        del bpy.types.Armature.body_parts
-        del bpy.types.Armature.animation_length
-        del bpy.types.Armature.is_applied
+    body_parts: CollectionProperty(type=EnabledPartsCollection)
 
     def regenerate_parts(self, config: BodyPartsConfiguration):
         # TODO reuse existing config
@@ -188,6 +159,66 @@ class Action(bpy.types.PropertyGroup):
         row.label(text="Transition settings:")
         self.transition.draw(row.box())
         row.label(text="Body Parts settings:")
-        box = row.box().column_flow(columns=2, align=True)
+        box = row.box()
+        columns = box.column_flow(columns=2, align=True)
+        one_checked = False
         for part in self.body_parts:
-            box.prop(part, "checked", text=part.name)
+            columns.prop(part, "checked", text=part.name)
+            one_checked = one_checked or part.checked
+        if not one_checked:
+            box.label(text="No body parts are checked! This actions won't be applied!", icon="ERROR")
+
+
+class GroupErrors(PropertyGroup):
+    class Errors(Enum):
+        COLLIDING_PARTS = ("Body parts are not unique", "Multiple actions apply to the same body parts")
+
+        @classmethod
+        def convert(cls):
+            return [(e.name, *e.value, i) for i, e in enumerate(cls)]
+
+    # ITEMS = [
+    #     ("COLLIDING_PARTS", "Body parts are not unique", "Multiple actions apply to the same body parts", "", 1),
+    #     # ("COLLIDING_PARTS", "Body parts are not unique", "Multiple actions apply to the same body parts", "", 1),
+    # ]
+    error: EnumProperty(items=Errors.convert())
+
+
+class ActionGroup(PropertyGroup):
+    """Collection of actions that will be executed at the same time"""
+
+    actions: CollectionProperty(type=Action)
+    active: IntProperty(default=0, min=0)
+    length: IntProperty(default=0, min=0)
+    actions_count: IntProperty(default=0, min=0)
+    errors: CollectionProperty(type=GroupErrors)
+
+    @classmethod
+    def register(cls):
+        bpy.types.Armature.groups = CollectionProperty(type=ActionGroup)
+        bpy.types.Armature.active = IntProperty(default=0, min=0)
+        bpy.types.Armature.body_parts = PointerProperty(type=BodyPartsConfiguration)
+        bpy.types.Armature.get_body_parts = get_body_parts
+        bpy.types.Armature.animation_length = IntProperty(
+            name="animationLength",
+            default=0,
+            min=0,
+            description="Final length in frames of the animation",
+        )
+        bpy.types.Armature.is_applied = BoolProperty(
+            name="Was apply used",
+            default=False,
+            description="True, if the armature is up-to-date with actions",
+        )
+
+    @classmethod
+    def unregister(cls):
+        del bpy.types.Armature.groups
+        del bpy.types.Armature.active
+        del bpy.types.Armature.body_parts
+        del bpy.types.Armature.animation_length
+        del bpy.types.Armature.is_applied
+
+    def add_error(self, error_type):
+        error = self.errors.add()
+        error.error = error_type

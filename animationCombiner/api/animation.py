@@ -73,12 +73,6 @@ class Animation(PropertyGroup):
                 rotation = anim.rotations.add()
                 rotation.rotation = results[bone]
 
-    def copy_from(self, other: "Animation"):
-        self.raw_order = other.raw_order
-        self.skeleton = other.skeleton
-        self.movement = other.movement
-        self.animation = other.animation
-
     @cached_property
     def order(self):
         return self.raw_order.split(",")
