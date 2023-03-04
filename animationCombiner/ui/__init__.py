@@ -10,7 +10,7 @@ from animationCombiner.operators import (
 )
 from animationCombiner.operators.armature import CreateArmatureOperator
 from animationCombiner.operators.files.export import ExportSomeData
-from animationCombiner.operators.process import ApplyOperator
+from animationCombiner.operators.apply import ApplyOperator
 
 
 class MainPanel(Panel):
