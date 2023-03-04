@@ -4,30 +4,7 @@ import bpy
 from bpy.props import StringProperty
 from bpy.types import Context
 
-from animationCombiner.animation import create_armature
-
-
-class CreateArmatureOperator(bpy.types.Operator):
-    """Creates HBM skeleton as a base"""
-
-    bl_idname = "ac.create_example"
-    bl_label = "Create empty armature"
-
-    @staticmethod
-    def run(self, context):
-        self.layout.operator(CreateArmatureOperator.bl_idname)
-
-    @classmethod
-    def register(cls):
-        bpy.types.VIEW3D_MT_add.prepend(cls.run)
-
-    @classmethod
-    def unregister(cls):
-        bpy.types.VIEW3D_MT_add.remove(cls.run)
-
-    def execute(self, context):
-        create_armature(context.scene.armature_name_preset)
-        return {"FINISHED"}
+from animationCombiner.utils import copy, on_actions_update
 
 
 class Empty(bpy.types.Operator):
@@ -66,4 +43,70 @@ class SelectObjectOperator(bpy.types.Operator):
     def execute(self, context: Context) -> typing.Set[str]:
         bpy.context.view_layer.objects.active = bpy.data.objects[self.name]
         bpy.ops.object.mode_set(mode="POSE")
+        return {"FINISHED"}
+
+
+class MoveActionToGroupOperator(bpy.types.Operator):
+    bl_idname = "ac.move_action_group"
+    bl_label = "Move action to specific group"
+
+    def execute(self, context: Context) -> typing.Set[str]:
+        obj = context.object.data
+        if obj.active == obj.move_to_group:
+            return {"CANCELLED"}
+
+        group = obj.groups[obj.active]
+        action = group.actions[group.active]
+
+        new_group = obj.groups[obj.move_to_group]
+        new_action = new_group.actions.add()
+        copy(action, new_action)
+
+        group.actions.remove(group.active)
+        group.active = min(max(0, group.active - 1), len(group.actions) - 1)
+        on_actions_update()
+        return {"FINISHED"}
+
+
+class SelectGroupOperator(bpy.types.Operator):
+    bl_idname = "ac.select_action_group"
+    bl_label = "Select group to which the action will be moved"
+
+    name: StringProperty(name="Group Name")
+
+    def execute(self, context: Context) -> typing.Set[str]:
+        obj = context.object.data
+        for index, group in enumerate(context.object.data.groups):
+            if group.name == self.name:
+                obj.move_to_group = index
+                return {"FINISHED"}
+        self.report({"ERROR"}, f"Unable to find group called {self.name}")
+        return {"CANCELLED"}
+
+
+class SelectAllPartsOperator(bpy.types.Operator):
+    """Selects all body parts"""
+
+    bl_idname = "ac.select_all_parts"
+    bl_label = "Selects all body parts"
+
+    def execute(self, context: Context) -> typing.Set[str]:
+        group = context.object.data.groups[context.object.data.active]
+        action = group.actions[group.active]
+        for part in action.body_parts:
+            part.checked = True
+        return {"FINISHED"}
+
+
+class SelectNoPartsOperator(bpy.types.Operator):
+    """Selects no body parts"""
+
+    bl_idname = "ac.select_no_parts"
+    bl_label = "Selects no body parts"
+
+    def execute(self, context: Context) -> typing.Set[str]:
+        group = context.object.data.groups[context.object.data.active]
+        action = group.actions[group.active]
+        for part in action.body_parts:
+            part.checked = False
         return {"FINISHED"}
