@@ -9,12 +9,12 @@ from bpy_extras.io_utils import ImportHelper
 from animationCombiner.api.actions import EnabledPartsCollection
 from animationCombiner.api.body_parts import BodyPartsConfiguration
 from animationCombiner.utils import on_actions_update, copy
-from animationCombiner.api.skeletons import HBMSkeleton
+from animationCombiner.api.skeletons import HDMSkeleton
 from animationCombiner.parsers import ParserError, load_animation_from_path, PARSERS
 
 
 class ImportActionOperator(bpy.types.Operator, ImportHelper):
-    """Imports new action."""
+    """Imports new action"""
 
     bl_label = "Import file"
     bl_idname = "ac.file_selector"
@@ -48,7 +48,7 @@ class ImportActionOperator(bpy.types.Operator, ImportHelper):
 
             action = armature.groups[armature.active].actions.add()
             copy(self.body_parts, action.body_parts)
-            action.animation.from_raw(raw_animation, HBMSkeleton())
+            action.animation.from_raw(raw_animation, HDMSkeleton())
             action.length_group.original_length = raw_animation.length
             action.length_group.length = raw_animation.length
             action.length_group.end = raw_animation.length

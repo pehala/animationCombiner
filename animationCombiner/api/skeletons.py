@@ -28,8 +28,8 @@ class Skeleton:
         return self.bones
 
 
-class HBMSkeleton(Skeleton, metaclass=Singleton):
-    """Skeleton from HBM05 data set"""
+class HDMSkeleton(Skeleton, metaclass=Singleton):
+    """Skeleton from HDM05 data set"""
 
     def __init__(self) -> None:
         super().__init__(

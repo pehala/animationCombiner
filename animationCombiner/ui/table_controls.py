@@ -1,5 +1,3 @@
-from typing import Callable
-
 from bpy.props import EnumProperty, CollectionProperty
 
 

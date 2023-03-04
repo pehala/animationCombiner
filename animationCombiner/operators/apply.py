@@ -2,7 +2,7 @@ import bpy
 
 from animationCombiner.animation import process_animation, create_bones
 from animationCombiner.api.model import Pose
-from animationCombiner.api.skeletons import HBMSkeleton
+from animationCombiner.api.skeletons import HDMSkeleton
 
 
 def skeleton_diff(base_skeleton, skeleton):
@@ -34,7 +34,7 @@ class ApplyOperator(bpy.types.Operator):
 
         # Select skeleton from poses
         base_skeleton = armature_data.actions[0].animation.skeleton
-        skeleton = HBMSkeleton()
+        skeleton = HDMSkeleton()
 
         # Recreate all Bones
         order = skeleton.order()
