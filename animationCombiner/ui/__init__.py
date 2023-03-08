@@ -57,12 +57,13 @@ class ArmatureSelect(Menu):
     bl_label = "Select armature"
 
     def draw(self, context):
-        objects = bpy.data.armatures
+        objects = bpy.data.objects
 
         layout = self.layout
         for armature in objects:
-            text = armature.name
-            layout.operator(SelectObjectOperator.bl_idname, text=text).name = text
+            if armature.type == "ARMATURE":
+                text = armature.name
+                layout.operator(SelectObjectOperator.bl_idname, text=text).name = text
 
 
 class SelectPanel(Panel):

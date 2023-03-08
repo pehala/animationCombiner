@@ -113,9 +113,44 @@ class HDM05MessifLoader(MessifLoader):
 
 @register_exporter(extensions={".data"})
 class HDM05MessifExporter(AnimationExporter):
-    def export_animation(self, animation: RawAnimation, file):
-        file.write("#objectKey messif.objects.keys.AbstractObjectKey 3361_31_757_198\n")
-        file.write("1;mcdr.objects.ObjectMocapPose\n")
+    NAMES = [
+        "root",
+        "lhipjoint",
+        "lfemur",
+        "ltibia",
+        "lfoot",
+        "ltoes",
+        "rhipjoint",
+        "rfemur",
+        "rtibia",
+        "rfoot",
+        "rtoes",
+        "lowerback",
+        "upperback",
+        "thorax",
+        "lowerneck",
+        "upperneck",
+        "head",
+        "lclavicle",
+        "lhumerus",
+        "lradius",
+        "lwrist",
+        "lhand",
+        "lfingers",
+        "lthumb",
+        "rclavicle",
+        "rhumerus",
+        "rradius",
+        "rwrist",
+        "rhand",
+        "rfingers",
+        "rthumb",
+    ]
+
+    def export_animation(self, animation: RawAnimation, disabled_bones: Collection[str], file):
+        binary_string = "".join("0" if name in disabled_bones else "1" for name in self.NAMES)
+        file.write(f"#objectKey messif.objects.keys.AbstractObjectKey 3361_31_757_198; {binary_string}\n")
+        file.write(f"{len(animation.poses)};mcdr.objects.ObjectMocapPose\n")
         for pose in animation.poses:
             data = []
             for name in HDM05MessifLoader.NAMES:

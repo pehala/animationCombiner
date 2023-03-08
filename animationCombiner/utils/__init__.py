@@ -47,6 +47,11 @@ def on_actions_update(self=None, context=None):
         parts = set()
         for action in group.actions:
             group_length = max(action.length_group.length, group_length)
+            action.length_group.length = (
+                action.length_group.original_length
+                + action.transition.length
+                + (action.transition.reset_length if action.transition.reset else 0)
+            )
             for part in action.body_parts:
                 if part.checked:
                     if part.uuid in parts:
@@ -58,3 +63,16 @@ def on_actions_update(self=None, context=None):
         length += group_length
     armature.animation_length = length
     armature.is_applied = False
+
+
+def calculate_rotations(self, bone, skeleton, first_pose, pose, results, parent=None):
+    if parent:
+        first = first_pose.bones[bone] - first_pose.bones[parent]
+        current = pose.bones[bone] - pose.bones[parent]
+    else:
+        first = first_pose.bones[bone]
+        current = pose.bones[bone]
+    results[bone] = first.rotation_difference(current)
+
+    for child in skeleton.relations.get(bone, []):
+        self.calculate_rotations(child, skeleton, first_pose, pose, results, bone)

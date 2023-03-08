@@ -20,15 +20,15 @@ from animationCombiner.utils import copy, on_actions_update
 
 class LengthGroup(bpy.types.PropertyGroup):
     def update_start(self, context):
-        if self.start > self.length:
-            self.start = self.length
+        if self.start > self.original_length:
+            self.start = self.original_length
         if self.start > self.end:
             self.start = self.end
         on_actions_update()
 
     def update_end(self, context):
-        if self.end > self.length:
-            self.end = self.length
+        if self.end > self.original_length:
+            self.end = self.original_length
         if self.end < self.start:
             self.end = self.start
         on_actions_update()
@@ -53,7 +53,7 @@ class LengthGroup(bpy.types.PropertyGroup):
         layout.use_property_split = True
         row = layout.row()
         row.enabled = False
-        row.prop(self, "length")
+        row.prop(self, "original_length", text="Length")
         row = layout.row()
         row.prop(self, "start")
         row = layout.row()

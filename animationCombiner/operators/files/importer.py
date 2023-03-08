@@ -29,7 +29,6 @@ class ImportActionOperator(bpy.types.Operator, ImportHelper):
     body_parts: CollectionProperty(type=EnabledPartsCollection)
 
     def generate_parts(self, config: BodyPartsConfiguration):
-        # TODO reuse existing config
         for part in config.body_parts:
             new_part = self.body_parts.add()
             new_part.name = part.name
@@ -37,7 +36,7 @@ class ImportActionOperator(bpy.types.Operator, ImportHelper):
 
     def invoke(self, context, _event):
         self.filter_glob = "*" + ";*".join(PARSERS.keys())
-        self.generate_parts(bpy.context.view_layer.objects.active.data.body_parts)
+        self.generate_parts(bpy.context.view_layer.objects.active.data.get_body_parts())
         return super().invoke(context, _event)
 
     def execute(self, context):

@@ -7,7 +7,7 @@ from animationCombiner.api.skeletons import HDMSkeleton
 
 def skeleton_diff(base_skeleton, skeleton):
     """Calculates rotational difference between base skeleton and the new one"""
-    return [pos.coords.rotation_difference(base.coords) for pos, base in zip(base_skeleton, skeleton)]
+    return [base.coords.rotation_difference(pos.coords) for base, pos in zip(base_skeleton, skeleton)]
 
 
 class ApplyOperator(bpy.types.Operator):
@@ -32,8 +32,11 @@ class ApplyOperator(bpy.types.Operator):
         armature_data = armature.data
         armature.animation_data_clear()
 
+        if len(armature_data.groups) == 0:
+            return {"FINISHED"}
+
         # Select skeleton from poses
-        base_skeleton = armature_data.actions[0].animation.skeleton
+        base_skeleton = armature_data.groups[0].actions[0].animation.skeleton
         skeleton = HDMSkeleton()
 
         # Recreate all Bones
@@ -42,23 +45,27 @@ class ApplyOperator(bpy.types.Operator):
         for name in order:
             bone = armature_data.edit_bones.get(name)
             if bone is not None:
-                armature_data.edit_bones.remove(armature_data.edit_bones.get(bone))
+                armature_data.edit_bones.remove(bone)
 
         pose = Pose({name: coords.coords for name, coords in zip(order, base_skeleton)})
         create_bones(armature_data, skeleton, pose)
         bpy.ops.object.mode_set(mode="POSE", toggle=False)
 
-        ending = 0
-        if len(armature_data.actions) == 0:
-            return {"FINISHED"}
+        groups = []
+        for group in armature_data.groups:
+            group_list = []
+            for action in group.actions:
+                group_list.append((action, skeleton_diff(base_skeleton, action.animation.skeleton)))
+            if len(group_list) > 0:
+                groups.append(group_list)
 
-        base_skeleton = armature_data.actions[0].animation.skeleton
-        actions = []
-        for action in armature_data.actions:
-            actions.append((action, skeleton_diff(base_skeleton, action.animation.skeleton)))
-
-        for action, diff in actions:
-            ending = process_animation(armature, action, diff, frame_start=ending)
-        bpy.context.scene.frame_end = ending
+        parts_dict = {part.uuid: {bone.bone for bone in part.bones} for part in armature_data.body_parts.body_parts}
+        starting = 0
+        for group in groups:
+            ending = starting
+            for action, diff in group:
+                ending = max(ending, process_animation(armature, action, diff, parts_dict, frame_start=starting))
+            starting = ending
+        bpy.context.scene.frame_end = starting
         armature_data.is_applied = True
         return {"FINISHED"}

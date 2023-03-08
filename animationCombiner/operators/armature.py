@@ -22,5 +22,6 @@ class CreateArmatureOperator(bpy.types.Operator):
         bpy.types.VIEW3D_MT_add.remove(cls.run)
 
     def execute(self, context):
+        bpy.ops.object.mode_set(mode="OBJECT", toggle=False)
         create_armature(context.scene.armature_name_preset)
         return {"FINISHED"}
