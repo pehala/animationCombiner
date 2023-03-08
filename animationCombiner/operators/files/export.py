@@ -34,6 +34,7 @@ class ExportSomeData(Operator, ExportHelper):
     body_parts: CollectionProperty(type=EnabledPartsCollection)
 
     def generate_parts(self, config: BodyPartsConfiguration):
+        self.body_parts.clear()
         for part in config.body_parts:
             new_part = self.body_parts.add()
             new_part.name = part.name
@@ -51,7 +52,7 @@ class ExportSomeData(Operator, ExportHelper):
         disabled_parts = {part.uuid for part in self.body_parts if not part.checked}
 
         disabled_bones = set()
-        for part in config:
+        for part in config.body_parts:
             if part.uuid in disabled_parts:
                 for bone in part.bones:
                     disabled_bones.add(bone.bone)
