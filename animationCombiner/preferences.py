@@ -28,10 +28,10 @@ DEFAULT_BODY_PARTS = {
     "Right Leg": ["rhipjoint", "rfemur", "rtibia"],
     "Left Foot": ["lfoot", "ltoes"],
     "Right Foot": ["rfoot", "rtoes"],
-    "Body": ["lowerback", "upperback", "thorax", "lclavicle", "rclavicle"],
+    "Body": ["lowerback", "upperback", "thorax"],
     "Head": ["lowerneck", "upperneck", "head"],
-    "Left Arm": ["lclavicle", "lhumerus", "lradius", "lwrist"],
-    "Right Arm": ["rclavicle", "rhumerus", "rradius", "rwrist"],
+    "Left Arm": ["lclavicle", "lhumerus", "lradius"],
+    "Right Arm": ["rclavicle", "rhumerus", "rradius"],
     "Left Hand": ["lwrist", "lhand", "lthumb", "lfingers"],
     "Right Hand": ["rwrist", "rhand", "rthumb", "rfingers"],
 }
