@@ -25,20 +25,23 @@ class Rotations(PropertyGroup):
 
 
 def calculate_rotation(
-    diff: Quaternion,
+    parent,
     bone,
-    first: Pose,
-    current: Pose,
+    first_pose: Pose,
+    current_pose: Pose,
     skeleton: Skeleton,
     results: dict[str, Quaternion],
 ):
-    pos = first.bones[bone].copy()
-    pos.rotate(diff)
-    rotation = current.bones[bone].rotation_difference(pos)
+    if parent:
+        first = first_pose.bones[bone] - first_pose.bones[parent]
+        current = current_pose.bones[bone] - current_pose.bones[parent]
+    else:
+        first = first_pose.bones[bone]
+        current = current_pose.bones[bone]
+    rotation = first.rotation_difference(current)
     results[bone] = rotation
-    diff = diff * rotation
     for child in skeleton.relations.get(bone, []):
-        calculate_rotation(diff, child, first, current, skeleton, results)
+        calculate_rotation(bone, child, first_pose, current_pose, skeleton, results)
 
 
 class Animation(PropertyGroup):
@@ -58,17 +61,11 @@ class Animation(PropertyGroup):
 
         # TODO: Normalize
 
-        # for pose in raw_animation.poses[1:]:
-        #     anim = self.animation.add()
-        #     for bone in skeleton.order():
-        #         rotation = anim.rotations.add()
-        #         rotation.rotation = pose.bones[bone].rotation_difference(first_pose.bones[bone])
-
         # Should fix rotation errors
         for pose in raw_animation.poses[1:]:
             anim = self.animation.add()
             results = {}
-            calculate_rotation(Quaternion(), "root", first_pose, pose, skeleton, results)
+            calculate_rotation(None, "root", first_pose, pose, skeleton, results)
             for bone in skeleton.order():
                 rotation = anim.rotations.add()
                 rotation.rotation = results[bone]

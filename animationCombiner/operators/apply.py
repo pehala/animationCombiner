@@ -7,7 +7,7 @@ from animationCombiner.api.skeletons import HDMSkeleton
 
 def skeleton_diff(base_skeleton, skeleton):
     """Calculates rotational difference between base skeleton and the new one"""
-    return [pos.coords.rotation_difference(base.coords) for pos, base in zip(base_skeleton, skeleton)]
+    return [base.coords.rotation_difference(pos.coords) for base, pos in zip(base_skeleton, skeleton)]
 
 
 class ApplyOperator(bpy.types.Operator):

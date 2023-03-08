@@ -4,6 +4,7 @@ import math
 import bpy
 import numpy as np
 from bpy.types import EditBone, Armature
+from mathutils import Quaternion
 
 from .api.actions import Action
 from .api.model import Pose
@@ -76,7 +77,12 @@ def process_animation(armature, action: Action, base_skeleton, parts, frame_star
         for name, rotation in zip(order, frame.rotations):
             if name not in disabled_bones:
                 bone = armature.pose.bones[name]
-                bone.rotation_quaternion = rotation.rotation
+                # bone.rotation_quaternion = (
+                #     bone.bone.matrix_local @ Quaternion(rotation.rotation).normalized().to_matrix().to_4x4()
+                # ).to_quaternion()
+                bone.rotation_quaternion = (
+                    bone.matrix @ bone.bone.matrix_local.inverted() @ Quaternion(rotation.rotation).to_matrix().to_4x4()
+                ).to_quaternion()
                 bone.keyframe_insert(
                     data_path="rotation_quaternion",
                     frame=last_frame,
@@ -87,7 +93,9 @@ def process_animation(armature, action: Action, base_skeleton, parts, frame_star
         for name, rotation in zip(order, base_skeleton):
             if name not in disabled_bones:
                 bone = armature.pose.bones[name]
-                bone.rotation_quaternion = rotation
+                bone.rotation_quaternion = (
+                    bone.matrix @ bone.bone.matrix_local.inverted() @ Quaternion(rotation.rotation).to_matrix().to_4x4()
+                ).to_quaternion()
                 bone.keyframe_insert(
                     data_path="rotation_quaternion",
                     frame=last_frame,
