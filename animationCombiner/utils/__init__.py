@@ -1,6 +1,9 @@
 """Collection of all utility functions/classes that didnt fit anywhere else"""
+import math
+
 import bpy
-from bpy.types import PropertyGroup, Property, bpy_prop_collection
+import numpy as np
+from bpy.types import PropertyGroup, Property, bpy_prop_collection, EditBone, Pose, Armature
 
 
 class Singleton(type):
@@ -65,14 +68,41 @@ def on_actions_update(self=None, context=None):
     armature.is_applied = False
 
 
-def calculate_rotations(self, bone, skeleton, first_pose, pose, results, parent=None):
-    if parent:
-        first = first_pose.bones[bone] - first_pose.bones[parent]
-        current = pose.bones[bone] - pose.bones[parent]
-    else:
-        first = first_pose.bones[bone]
-        current = pose.bones[bone]
-    results[bone] = first.rotation_difference(current)
+def create_armature(name: str = "Armature", exit_mode="POSE"):
+    """Create the entire Armature"""
+    bpy.ops.object.armature_add(enter_editmode=True)
+    armature = bpy.context.view_layer.objects.active
 
-    for child in skeleton.relations.get(bone, []):
-        self.calculate_rotations(child, skeleton, first_pose, pose, results, bone)
+    armature.name = name
+    armature.data.name = name
+
+    armature.data.edit_bones.remove(armature.data.edit_bones.get("Bone"))
+
+    # Exit Armature editing
+    bpy.ops.object.mode_set(mode="OBJECT", toggle=False)
+
+    armature.rotation_mode = "XYZ"
+    armature.rotation_euler.rotate_axis("X", math.radians(90))
+
+    bpy.ops.object.mode_set(mode=exit_mode, toggle=False)
+    return armature
+
+
+def create_bone(armature, name, parent: EditBone, pose: Pose, skeleton):
+    bone = armature.edit_bones.new(name)
+    bone.head = parent.tail
+    bone.tail = pose.bones[name]
+    bone.parent = parent
+
+    for child in skeleton.relations.get(name, []):
+        create_bone(armature, child, bone, pose, skeleton)
+
+
+def create_bones(armature: Armature, skeleton, pose: Pose, root: EditBone = None):
+    if not root:
+        root = armature.edit_bones.new("root")
+        root.head = np.array((0, 0.1, 0))
+        root.tail = pose.bones["root"]
+
+    for child in skeleton.relations["root"]:
+        create_bone(armature, child, root, pose, skeleton)

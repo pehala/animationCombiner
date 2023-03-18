@@ -2,10 +2,10 @@ from functools import cached_property
 
 from bpy.props import FloatVectorProperty, CollectionProperty, StringProperty
 from bpy.types import PropertyGroup
-from mathutils import Quaternion
 
-from animationCombiner.api.model import RawAnimation, Pose
+from animationCombiner.api.model import RawAnimation
 from animationCombiner.api.skeletons import Skeleton
+from animationCombiner.utils.rotation import calculate_rotations
 
 
 class CoordsProperty(PropertyGroup):
@@ -22,26 +22,6 @@ class RotationProperty(PropertyGroup):
 
 class Rotations(PropertyGroup):
     rotations: CollectionProperty(type=RotationProperty)
-
-
-def calculate_rotation(
-    parent,
-    bone,
-    first_pose: Pose,
-    current_pose: Pose,
-    skeleton: Skeleton,
-    results: dict[str, Quaternion],
-):
-    if parent:
-        first = first_pose.bones[bone] - first_pose.bones[parent]
-        current = current_pose.bones[bone] - current_pose.bones[parent]
-    else:
-        first = first_pose.bones[bone]
-        current = current_pose.bones[bone]
-    rotation = first.rotation_difference(current)
-    results[bone] = rotation
-    for child in skeleton.relations.get(bone, []):
-        calculate_rotation(bone, child, first_pose, current_pose, skeleton, results)
 
 
 class Animation(PropertyGroup):
@@ -62,13 +42,11 @@ class Animation(PropertyGroup):
         # TODO: Normalize
 
         # Should fix rotation errors
-        for pose in raw_animation.poses[1:]:
+        for frame in calculate_rotations(raw_animation):
             anim = self.animation.add()
-            results = {}
-            calculate_rotation(None, "root", first_pose, pose, skeleton, results)
             for bone in skeleton.order():
                 rotation = anim.rotations.add()
-                rotation.rotation = results[bone]
+                rotation.rotation = frame[bone]
 
     @cached_property
     def order(self):

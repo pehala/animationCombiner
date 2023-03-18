@@ -1,6 +1,6 @@
 import bpy
 
-from animationCombiner.animation import create_armature
+from animationCombiner.utils import create_armature
 
 
 class CreateArmatureOperator(bpy.types.Operator):
