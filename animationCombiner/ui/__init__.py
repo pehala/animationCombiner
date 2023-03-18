@@ -11,6 +11,7 @@ from animationCombiner.operators import (
 from animationCombiner.operators.armature import CreateArmatureOperator
 from animationCombiner.operators.files.export import ExportSomeData
 from animationCombiner.operators.apply import ApplyOperator
+from animationCombiner.utils.weakget import weakget
 
 
 class MainPanel(Panel):
@@ -91,7 +92,8 @@ class SelectPanel(Panel):
 
         row = self.layout.row()
         row.label(text="Select: ")
-        text = context.object.name if context.object.type == "ARMATURE" else "None"
+        ctx = weakget(context)
+        text = context.object.name if ctx.object.type % "NONE" == "ARMATURE" else "None"
         row.menu(ArmatureSelect.bl_idname, text=text)
 
 
@@ -106,7 +108,7 @@ class ApplyPanel(Panel):
 
     @classmethod
     def poll(cls, context):
-        return context.object.type == "ARMATURE"
+        return weakget(context).object.type % "NONE" == "ARMATURE" and weakget(context).object.data % False
 
     def draw(self, context: Context) -> None:
         obj = context.object.data

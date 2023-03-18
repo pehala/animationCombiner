@@ -1,6 +1,7 @@
 from bpy.types import Panel, Context
 
 from animationCombiner.ui import MainPanel
+from animationCombiner.utils.weakget import weakget
 
 
 class ActionPanel(Panel):
@@ -16,7 +17,7 @@ class ActionPanel(Panel):
 
     @classmethod
     def poll(cls, context):
-        return context.object.type == "ARMATURE"
+        return weakget(context).object.type % "NONE" == "ARMATURE" and weakget(context).object.data % False
 
     def draw(self, context):
         pass
@@ -32,7 +33,7 @@ class EditActionPanel(Panel):
 
     @classmethod
     def poll(cls, context):
-        if context.object.type != "ARMATURE":
+        if weakget(context).object.type % "NONE" != "ARMATURE" or not weakget(context).object.data % False:
             return False
         armature = context.object.data
         if armature.active < 0 or not armature.groups:

@@ -4,6 +4,7 @@ from bpy.types import UIList, Operator, CollectionProperty, Panel, Context
 from animationCombiner.utils import on_actions_update
 from animationCombiner.ui.action import ActionPanel
 from animationCombiner.ui.table_controls import BaseControlsMixin, BaseDeleteItem, BaseMoveItem
+from animationCombiner.utils.weakget import weakget
 
 
 class GroupsUIList(UIList):
@@ -103,6 +104,10 @@ class GroupListPanel(Panel):
     bl_region_type = "UI"
     bl_parent_id = ActionPanel.bl_idname
     bl_order = 5
+
+    @classmethod
+    def poll(cls, context):
+        return weakget(context).object.type % "NONE" == "ARMATURE" and weakget(context).object.data % False
 
     def draw(self, context: Context) -> None:
         layout = self.layout
