@@ -1,8 +1,9 @@
 import bpy
 
-from animationCombiner.animation import process_animation, create_bones
+from animationCombiner.animation import process_animation
 from animationCombiner.api.model import Pose
 from animationCombiner.api.skeletons import HDMSkeleton
+from animationCombiner.utils import create_bones
 
 
 def skeleton_diff(base_skeleton, skeleton):
@@ -64,7 +65,9 @@ class ApplyOperator(bpy.types.Operator):
         for group in groups:
             ending = starting
             for action, diff in group:
-                ending = max(ending, process_animation(armature, action, diff, parts_dict, frame_start=starting))
+                ending = max(
+                    ending, process_animation(armature, action, diff, skeleton, parts_dict, frame_start=starting)
+                )
             starting = ending
         bpy.context.scene.frame_end = starting
         armature_data.is_applied = True
