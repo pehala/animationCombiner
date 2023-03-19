@@ -3,7 +3,11 @@ import math
 
 import bpy
 import numpy as np
-from bpy.types import PropertyGroup, Property, bpy_prop_collection, EditBone, Pose, Armature
+import typing
+from bpy.types import PropertyGroup, Property, bpy_prop_collection, EditBone, Armature
+
+if typing.TYPE_CHECKING:
+    from animationCombiner.api.model import Pose
 
 
 class Singleton(type):
@@ -45,9 +49,7 @@ def on_actions_update(self=None, context=None):
     armature = bpy.context.view_layer.objects.active.data
     length = 0
     for group in armature.groups:
-        group.errors.clear()
         group_length = 0
-        parts = set()
         for action in group.actions:
             group_length = max(action.length_group.length, group_length)
             action.length_group.length = (
@@ -58,16 +60,37 @@ def on_actions_update(self=None, context=None):
             )
             action.length_group.update_end()
             action.length_group.update_start()
+        group.length = group_length
+        group.actions_count = len(group.actions)
+        length += group_length
+    armature.animation_length = length
+    armature.is_applied = False
+
+
+def update_errors(self=None, context=None):
+    armature = bpy.context.view_layer.objects.active.data
+    use_skeleton = False
+    for group in armature.groups:
+        group.errors.clear()
+        parts = set()
+        has_movement = False
+        for action in group.actions:
+            if action.use_skeleton:
+                if use_skeleton:
+                    group.add_error("MULTIPLE_SKELETONS")
+                use_skeleton = True
+            if action.use_movement:
+                if has_movement:
+                    group.add_error("MULTIPLE_MOVEMENTS")
+                has_movement = True
             for part in action.body_parts:
                 if part.checked:
                     if part.uuid in parts:
                         group.add_error("COLLIDING_PARTS")
                         break
                     parts.add(part.uuid)
-        group.length = group_length
-        group.actions_count = len(group.actions)
-        length += group_length
-    armature.animation_length = length
+    if not use_skeleton and len(armature.groups) > 0:
+        armature.groups[0].add_error("NO_SKELETON")
     armature.is_applied = False
 
 
@@ -91,7 +114,7 @@ def create_armature(name: str = "Armature", exit_mode="POSE"):
     return armature
 
 
-def create_bone(armature, name, parent: EditBone, pose: Pose, skeleton):
+def create_bone(armature, name, parent: EditBone, pose: "Pose", skeleton):
     bone = armature.edit_bones.new(name)
     bone.head = parent.tail
     bone.tail = pose.bones[name]
@@ -101,7 +124,7 @@ def create_bone(armature, name, parent: EditBone, pose: Pose, skeleton):
         create_bone(armature, child, bone, pose, skeleton)
 
 
-def create_bones(armature: Armature, skeleton, pose: Pose, root: EditBone = None):
+def create_bones(armature: Armature, skeleton, pose: "Pose", root: EditBone = None):
     if not root:
         root = armature.edit_bones.new("root")
         root.head = np.array((0, 0.1, 0))
@@ -109,21 +132,3 @@ def create_bones(armature: Armature, skeleton, pose: Pose, root: EditBone = None
 
     for child in skeleton.relations["root"]:
         create_bone(armature, child, root, pose, skeleton)
-
-
-class QuaternionStabilizer:
-    def __init__(self):
-        self.old = None
-
-    def stabilize(self, q):
-        if self.old is None:
-            rval = q
-        else:
-            d1 = (self.old - q).magnitude
-            d2 = (self.old + q).magnitude
-            if d1 < d2:
-                rval = q
-            else:
-                rval = -q
-        self.old = rval
-        return rval
