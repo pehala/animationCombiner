@@ -20,14 +20,14 @@ from animationCombiner.utils import copy, on_actions_update, update_errors
 
 class LengthGroup(bpy.types.PropertyGroup):
     def update_start(self):
-        if self.start > self.original_length * self.slowdown:
-            self.start = self.original_length * self.slowdown
+        if self.start > self.original_length:
+            self.start = self.original_length
         if self.start > self.end:
             self.start = self.end
 
     def update_end(self):
-        if self.end > self.original_length * self.slowdown:
-            self.end = self.original_length * self.slowdown
+        if self.end > self.original_length:
+            self.end = self.original_length
         if self.end < self.start:
             self.end = self.start
 
@@ -42,14 +42,14 @@ class LengthGroup(bpy.types.PropertyGroup):
     )
     start: IntProperty(
         name="start",
-        description="On which frame should the animation start, defaults to 0",
+        description="On which frame should the animation start, defaults to 0. Not affected by slowdown.",
         default=0,
         min=0,
         update=on_actions_update,
     )
     end: IntProperty(
         name="end",
-        description="On which frame should the animation end, defaults to last frame",
+        description="On which frame should the animation end, defaults to last frame. Not affected by slowdown.",
         min=0,
         update=on_actions_update,
     )
@@ -127,7 +127,18 @@ class Action(PropertyGroup):
     transition: PointerProperty(type=TransitionGroup)
     animation: PointerProperty(type=Animation)
     body_parts: CollectionProperty(type=EnabledPartsCollection)
-    use_movement: BoolProperty(default=False, update=update_errors)
+    use_movement: BoolProperty(
+        default=False,
+        update=update_errors,
+        name="Use movement",
+        description="True, if this Action should have its movement applied as part of this group. Only one Action can have this set to True in each Group",
+    )
+    use_skeleton: BoolProperty(
+        default=False,
+        update=update_errors,
+        name="Use skeleton",
+        description="True, if this Action should have its skeleton used as base for the entire animation. Only one Action can have this set globally.",
+    )
 
     def regenerate_parts(self, config: BodyPartsConfiguration):
         # TODO reuse existing config
@@ -140,6 +151,7 @@ class Action(PropertyGroup):
     def draw(self, layout):
         row = layout.column_flow(columns=1)
         row.prop(self, "name")
+        row.prop(self, "use_skeleton")
         col = row.column()
         col.enabled = self.animation.has_movement
         col.prop(self, "use_movement")
@@ -166,6 +178,8 @@ class GroupErrors(PropertyGroup):
     class Errors(Enum):
         COLLIDING_PARTS = ("Body parts are not unique", "Multiple actions apply to the same body parts")
         MULTIPLE_MOVEMENTS = ("Multiple movements", "Movement can be used only from one action per group")
+        MULTIPLE_SKELETONS = ("Multiple skeletons", "There needs to be exactly one action marked with use skeleton")
+        NO_SKELETONS = ("No skeleton", "There needs to be exactly one action marked with use skeleton")
 
         @classmethod
         def convert(cls):

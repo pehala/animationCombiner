@@ -37,7 +37,12 @@ class ApplyOperator(bpy.types.Operator):
             return {"FINISHED"}
 
         # Select skeleton from poses
-        pose = armature_data.groups[0].actions[0].animation.initial_pose
+        pose = None
+        for group in armature_data.groups:
+            for action in group.actions:
+                if action.use_skeleton:
+                    pose = action.animation.initial_pose
+
         skeleton = HDMSkeleton()
 
         # Recreate all Bones

@@ -49,9 +49,7 @@ def on_actions_update(self=None, context=None):
     armature = bpy.context.view_layer.objects.active.data
     length = 0
     for group in armature.groups:
-        group.errors.clear()
         group_length = 0
-        parts = set()
         for action in group.actions:
             group_length = max(action.length_group.length, group_length)
             action.length_group.length = (
@@ -62,12 +60,6 @@ def on_actions_update(self=None, context=None):
             )
             action.length_group.update_end()
             action.length_group.update_start()
-            for part in action.body_parts:
-                if part.checked:
-                    if part.uuid in parts:
-                        group.add_error("COLLIDING_PARTS")
-                        break
-                    parts.add(part.uuid)
         group.length = group_length
         group.actions_count = len(group.actions)
         length += group_length
@@ -77,11 +69,16 @@ def on_actions_update(self=None, context=None):
 
 def update_errors(self=None, context=None):
     armature = bpy.context.view_layer.objects.active.data
+    use_skeleton = False
     for group in armature.groups:
         group.errors.clear()
         parts = set()
         has_movement = False
         for action in group.actions:
+            if action.use_skeleton:
+                if use_skeleton:
+                    group.add_error("MULTIPLE_SKELETONS")
+                use_skeleton = True
             if action.use_movement:
                 if has_movement:
                     group.add_error("MULTIPLE_MOVEMENTS")
@@ -92,6 +89,8 @@ def update_errors(self=None, context=None):
                         group.add_error("COLLIDING_PARTS")
                         break
                     parts.add(part.uuid)
+    if not use_skeleton and len(armature.groups) > 0:
+        armature.groups[0].add_error("NO_SKELETON")
     armature.is_applied = False
 
 
