@@ -14,16 +14,18 @@ def process_animation(armature, action: Action, base_skeleton, skeleton, parts, 
     for uuid, bones in parts.items():
         if uuid in disabled_parts:
             disabled_bones.update(bones)
-    # # Set it to base rotation
-    for name, rotation in zip(order, base_skeleton):
-        bone = armature.pose.bones[name]
-        bone.rotation_mode = "QUATERNION"
-        bone.rotation_quaternion = rotation
-        bone.keyframe_insert(
-            data_path="rotation_quaternion",
-            frame=frame_start,
-            group=name,
-        )
+
+    # Set it to base rotation
+    for name, rotation in base_skeleton.items():
+        if name not in disabled_bones:
+            bone = armature.pose.bones[name]
+            bone.rotation_mode = "QUATERNION"
+            bone.rotation_quaternion = rotation
+            bone.keyframe_insert(
+                data_path="rotation_quaternion",
+                frame=frame_start,
+                group=name,
+            )
 
     last_frame = frame_start
     for i, frame in enumerate(animation.animation[action.length_group.start : action.length_group.end]):
@@ -31,7 +33,7 @@ def process_animation(armature, action: Action, base_skeleton, skeleton, parts, 
         for name, rotation in zip(order, frame.rotations):
             if name not in disabled_bones:
                 bone = armature.pose.bones[name]
-                bone.rotation_quaternion = Quaternion(rotation.rotation)
+                bone.rotation_quaternion = base_skeleton[name] @ Quaternion(rotation.rotation)
                 bone.keyframe_insert(
                     data_path="rotation_quaternion",
                     frame=last_frame,
@@ -39,12 +41,10 @@ def process_animation(armature, action: Action, base_skeleton, skeleton, parts, 
                 )
     if action.transition.reset:
         last_frame = last_frame + action.transition.reset_length
-        for name, rotation in zip(order, base_skeleton):
+        for name, rotation in base_skeleton.items():
             if name not in disabled_bones:
                 bone = armature.pose.bones[name]
-                bone.rotation_quaternion = (
-                    bone.matrix @ bone.bone.matrix_local.inverted() @ Quaternion(rotation.rotation).to_matrix().to_4x4()
-                ).to_quaternion()
+                bone.rotation_quaternion = rotation
                 bone.keyframe_insert(
                     data_path="rotation_quaternion",
                     frame=last_frame,
