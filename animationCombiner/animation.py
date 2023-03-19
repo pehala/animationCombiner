@@ -4,8 +4,9 @@ from mathutils import Quaternion
 from .api.actions import Action
 
 
-def process_animation(armature, action: Action, base_skeleton, skeleton, parts, frame_start=0, frame_delay=1):
+def process_animation(armature, action: Action, base_skeleton, skeleton, parts, frame_start=0):
     """Test"""
+    frame_delay = action.length_group.slowdown
     animation = action.animation
     order = animation.order
     disabled_parts = {part.uuid for part in action.body_parts if not part.checked}

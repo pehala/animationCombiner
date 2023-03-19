@@ -51,10 +51,13 @@ def on_actions_update(self=None, context=None):
         for action in group.actions:
             group_length = max(action.length_group.length, group_length)
             action.length_group.length = (
-                action.length_group.original_length
+                action.length_group.original_length * action.length_group.slowdown
                 + action.transition.length
                 + (action.transition.reset_length if action.transition.reset else 0)
+                - 1
             )
+            action.length_group.update_end()
+            action.length_group.update_start()
             for part in action.body_parts:
                 if part.checked:
                     if part.uuid in parts:
@@ -106,3 +109,21 @@ def create_bones(armature: Armature, skeleton, pose: Pose, root: EditBone = None
 
     for child in skeleton.relations["root"]:
         create_bone(armature, child, root, pose, skeleton)
+
+
+class QuaternionStabilizer:
+    def __init__(self):
+        self.old = None
+
+    def stabilize(self, q):
+        if self.old is None:
+            rval = q
+        else:
+            d1 = (self.old - q).magnitude
+            d2 = (self.old + q).magnitude
+            if d1 < d2:
+                rval = q
+            else:
+                rval = -q
+        self.old = rval
+        return rval
