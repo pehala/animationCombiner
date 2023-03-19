@@ -71,6 +71,10 @@ class LengthGroup(bpy.types.PropertyGroup):
         # row = layout.row()
         # row.prop(self, "length")
 
+    @property
+    def real_length(self):
+        return (self.end - self.start) * self.slowdown
+
 
 class TransitionGroup(bpy.types.PropertyGroup):
     reset: BoolProperty(
@@ -102,6 +106,10 @@ class TransitionGroup(bpy.types.PropertyGroup):
 
         row = layout.row()
         row.prop(self, "length", slider=False)
+
+    @property
+    def real_length(self):
+        return self.length - 1 + (self.reset_length if self.reset else 0)
 
 
 def get_body_parts(self):

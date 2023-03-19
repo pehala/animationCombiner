@@ -70,7 +70,7 @@ def create_rotation_armatures(initial_pose, skeleton):
         bpy.ops.object.mode_set(mode=mode, toggle=False)
 
 
-def calculate_frame(armature_a: Armature, armature_b: Armature, pose: "Pose"):
+def calculate_frame(armature_a: Armature, armature_b: Armature, pose: "Pose") -> dict[str, Quaternion]:
     """Calculates rotation difference between initial pose and pose specified"""
     rotations = {}
     bpy.context.view_layer.objects.active = armature_a
@@ -89,7 +89,7 @@ def calculate_frame(armature_a: Armature, armature_b: Armature, pose: "Pose"):
 def calculate_frames(poses: list["Pose"]) -> list[dict[str, Quaternion]]:
     """Calculates rotation difference between initial pose and all other poses"""
     frames = []
-    with create_rotation_armatures(poses.poses[0], HDMSkeleton()) as armatures:
+    with create_rotation_armatures(poses[0], HDMSkeleton()) as armatures:
         armature_a, armature_b = armatures
         for pose in poses[1:]:
             frames.append(calculate_frame(armature_a, armature_b, pose))
@@ -103,4 +103,4 @@ def calculate_frames(poses: list["Pose"]) -> list[dict[str, Quaternion]]:
             if rotation.dot(rotation2) < 0:
                 pose2[bone].negate()
 
-    return poses
+    return frames

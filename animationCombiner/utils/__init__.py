@@ -5,6 +5,7 @@ import bpy
 import numpy as np
 import typing
 from bpy.types import PropertyGroup, Property, bpy_prop_collection, EditBone, Armature
+from mathutils import Vector
 
 if typing.TYPE_CHECKING:
     from animationCombiner.api.model import Pose
@@ -52,12 +53,7 @@ def on_actions_update(self=None, context=None):
         group_length = 0
         for action in group.actions:
             group_length = max(action.length_group.length, group_length)
-            action.length_group.length = (
-                action.length_group.original_length * action.length_group.slowdown
-                + action.transition.length
-                + (action.transition.reset_length if action.transition.reset else 0)
-                - 1
-            )
+            action.length_group.length = action.length_group.real_length + action.transition.real_length
             action.length_group.update_end()
             action.length_group.update_start()
         group.length = group_length
@@ -90,7 +86,7 @@ def update_errors(self=None, context=None):
                         break
                     parts.add(part.uuid)
     if not use_skeleton and len(armature.groups) > 0:
-        armature.groups[0].add_error("NO_SKELETON")
+        armature.groups[0].add_error("NO_SKELETONS")
     armature.is_applied = False
 
 
@@ -127,7 +123,7 @@ def create_bone(armature, name, parent: EditBone, pose: "Pose", skeleton):
 def create_bones(armature: Armature, skeleton, pose: "Pose", root: EditBone = None):
     if not root:
         root = armature.edit_bones.new("root")
-        root.head = np.array((0, 0.1, 0))
+        root.head = pose.bones["root"] + Vector((0, 0.1, 0))
         root.tail = pose.bones["root"]
 
     for child in skeleton.relations["root"]:

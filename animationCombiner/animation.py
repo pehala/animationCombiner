@@ -32,6 +32,15 @@ def process_animation(armature, action: Action, base_skeleton, skeleton, parts, 
     for i, frame in enumerate(animation.animation[action.length_group.start : action.length_group.end]):
         last_frame = frame_start + (i * frame_delay)
         for name, rotation in zip(order, frame.rotations):
+            if action.use_movement and name == "root":
+                bone = armature.pose.bones[name]
+                bone.location = animation.movement[i].translation
+                bone.keyframe_insert(
+                    data_path="location",
+                    frame=last_frame,
+                    group=name,
+                )
+
             if name not in disabled_bones:
                 bone = armature.pose.bones[name]
                 bone.rotation_quaternion = base_skeleton[name] @ Quaternion(rotation.rotation)

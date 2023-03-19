@@ -1,4 +1,5 @@
 import bpy
+from mathutils import Vector
 
 from animationCombiner.animation import process_animation
 from animationCombiner.api.skeletons import HDMSkeleton
@@ -54,6 +55,7 @@ class ApplyOperator(bpy.types.Operator):
                 armature_data.edit_bones.remove(bone)
 
         create_bones(armature_data, skeleton, pose)
+        armature.pose.bones["root"].location = Vector((0, 0, 0))
         bpy.ops.object.mode_set(mode="POSE", toggle=False)
 
         with create_rotation_armatures(pose, skeleton) as armatures:
