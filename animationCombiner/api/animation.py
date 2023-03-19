@@ -2,10 +2,14 @@ from functools import cached_property
 
 from bpy.props import FloatVectorProperty, CollectionProperty, StringProperty
 from bpy.types import PropertyGroup
+from mathutils import Vector
 
 from animationCombiner.api.model import RawAnimation, Pose
 from animationCombiner.api.skeletons import Skeleton
+from animationCombiner.utils import normalize_pose
 from animationCombiner.utils.rotation import calculate_frames
+
+EMPTY_VECTOR = Vector((0, 0, 0))
 
 
 class CoordsProperty(PropertyGroup):
@@ -39,10 +43,16 @@ class Animation(PropertyGroup):
             pos = self.skeleton.add()
             pos.coords = first_pose.bones[bone]
 
-        # TODO: Normalize
+        normalized, translations = normalize_pose(raw_animation.poses)
+
+        has_translations = any(vec != EMPTY_VECTOR for vec in translations)
+        if has_translations:
+            for translation in translations:
+                move = self.movement.add()
+                move.translation = translation
 
         # Should fix rotation errors
-        for frame in calculate_frames(raw_animation):
+        for frame in calculate_frames(normalized):
             anim = self.animation.add()
             for bone in skeleton.order():
                 rotation = anim.rotations.add()
@@ -51,6 +61,10 @@ class Animation(PropertyGroup):
     @cached_property
     def order(self):
         return self.raw_order.split(",")
+
+    @property
+    def has_movement(self):
+        return len(self.movement) > 0
 
     @property
     def length(self):

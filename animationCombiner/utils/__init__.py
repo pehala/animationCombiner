@@ -3,7 +3,10 @@ import math
 
 import bpy
 import numpy as np
-from bpy.types import PropertyGroup, Property, bpy_prop_collection, EditBone, Pose, Armature
+from bpy.types import PropertyGroup, Property, bpy_prop_collection, EditBone, Armature
+from mathutils import Vector
+
+from animationCombiner.api.model import Pose
 
 
 class Singleton(type):
@@ -111,19 +114,13 @@ def create_bones(armature: Armature, skeleton, pose: Pose, root: EditBone = None
         create_bone(armature, child, root, pose, skeleton)
 
 
-class QuaternionStabilizer:
-    def __init__(self):
-        self.old = None
-
-    def stabilize(self, q):
-        if self.old is None:
-            rval = q
-        else:
-            d1 = (self.old - q).magnitude
-            d2 = (self.old + q).magnitude
-            if d1 < d2:
-                rval = q
-            else:
-                rval = -q
-        self.old = rval
-        return rval
+def normalize_pose(poses: list[Pose]) -> [list[Pose], list[Vector]]:
+    """Normalizes the pose and returns both the new normalized pose and the translation vectors"""
+    translations = []
+    normalized = []
+    for pose in poses:
+        translation = pose.bones["root"].copy()
+        translation.negate()
+        translations.append(translation)
+        normalized.append(Pose({bone: pos - translation for bone, pos in pose.bones.items()}))
+    return normalized, translations
