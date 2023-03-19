@@ -89,4 +89,14 @@ def calculate_frames(raw_animation) -> list[dict[str, Quaternion]]:
         armature_a, armature_b = armatures
         for pose in raw_animation.poses[1:]:
             poses.append(calculate_frame(armature_a, armature_b, pose))
+
+    # stabilize animation
+    for i in range(len(poses) - 1):
+        pose1 = poses[i]
+        pose2 = poses[i + 1]
+        for bone, rotation in pose1.items():
+            rotation2 = pose2[bone]
+            if rotation.dot(rotation2) < 0:
+                pose2[bone].negate()
+
     return poses

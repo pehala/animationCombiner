@@ -19,34 +19,39 @@ from animationCombiner.utils import copy, on_actions_update
 
 
 class LengthGroup(bpy.types.PropertyGroup):
-    def update_start(self, context):
-        if self.start > self.original_length:
-            self.start = self.original_length
+    def update_start(self):
+        if self.start > self.original_length * self.slowdown:
+            self.start = self.original_length * self.slowdown
         if self.start > self.end:
             self.start = self.end
-        on_actions_update()
 
-    def update_end(self, context):
-        if self.end > self.original_length:
-            self.end = self.original_length
+    def update_end(self):
+        if self.end > self.original_length * self.slowdown:
+            self.end = self.original_length * self.slowdown
         if self.end < self.start:
             self.end = self.start
-        on_actions_update()
 
     original_length: IntProperty(name="Original Length", description="Original Length (in frames)")
     length: IntProperty(name="Length", description="Length (in frames)")
+    slowdown: IntProperty(
+        name="Slowdown",
+        description="Slowdown, in times that the animation is slowed down",
+        min=1,
+        default=1,
+        update=on_actions_update,
+    )
     start: IntProperty(
         name="start",
         description="On which frame should the animation start, defaults to 0",
         default=0,
         min=0,
-        update=update_start,
+        update=on_actions_update,
     )
     end: IntProperty(
         name="end",
         description="On which frame should the animation end, defaults to last frame",
         min=0,
-        update=update_end,
+        update=on_actions_update,
     )
 
     def draw(self, layout):
@@ -58,6 +63,9 @@ class LengthGroup(bpy.types.PropertyGroup):
         row.prop(self, "start")
         row = layout.row()
         row.prop(self, "end")
+
+        row = layout.row()
+        row.prop(self, "slowdown")
 
         # Hidden as it doesnt work yet
         # row = layout.row()
