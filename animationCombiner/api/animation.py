@@ -3,9 +3,9 @@ from functools import cached_property
 from bpy.props import FloatVectorProperty, CollectionProperty, StringProperty
 from bpy.types import PropertyGroup
 
-from animationCombiner.api.model import RawAnimation
+from animationCombiner.api.model import RawAnimation, Pose
 from animationCombiner.api.skeletons import Skeleton
-from animationCombiner.utils.rotation import calculate_rotations
+from animationCombiner.utils.rotation import calculate_frames
 
 
 class CoordsProperty(PropertyGroup):
@@ -42,7 +42,7 @@ class Animation(PropertyGroup):
         # TODO: Normalize
 
         # Should fix rotation errors
-        for frame in calculate_rotations(raw_animation):
+        for frame in calculate_frames(raw_animation):
             anim = self.animation.add()
             for bone in skeleton.order():
                 rotation = anim.rotations.add()
@@ -52,6 +52,10 @@ class Animation(PropertyGroup):
     def order(self):
         return self.raw_order.split(",")
 
-    @cached_property
+    @property
     def length(self):
         return len(self.animation)
+
+    @property
+    def initial_pose(self):
+        return Pose({name: coords.coords for name, coords in zip(self.order, self.skeleton)})

@@ -1,9 +1,9 @@
 import bpy
 
 from animationCombiner.animation import process_animation
-from animationCombiner.api.model import Pose
 from animationCombiner.api.skeletons import HDMSkeleton
 from animationCombiner.utils import create_bones
+from animationCombiner.utils.rotation import create_rotation_armatures, calculate_frame
 
 
 def skeleton_diff(base_skeleton, skeleton):
@@ -37,7 +37,7 @@ class ApplyOperator(bpy.types.Operator):
             return {"FINISHED"}
 
         # Select skeleton from poses
-        base_skeleton = armature_data.groups[0].actions[0].animation.skeleton
+        pose = armature_data.groups[0].actions[0].animation.initial_pose
         skeleton = HDMSkeleton()
 
         # Recreate all Bones
@@ -48,27 +48,21 @@ class ApplyOperator(bpy.types.Operator):
             if bone is not None:
                 armature_data.edit_bones.remove(bone)
 
-        pose = Pose({name: coords.coords for name, coords in zip(order, base_skeleton)})
         create_bones(armature_data, skeleton, pose)
         bpy.ops.object.mode_set(mode="POSE", toggle=False)
 
-        groups = []
-        for group in armature_data.groups:
-            group_list = []
-            for action in group.actions:
-                group_list.append((action, skeleton_diff(base_skeleton, action.animation.skeleton)))
-            if len(group_list) > 0:
-                groups.append(group_list)
-
-        parts_dict = {part.uuid: {bone.bone for bone in part.bones} for part in armature_data.body_parts.body_parts}
-        starting = 0
-        for group in groups:
-            ending = starting
-            for action, diff in group:
-                ending = max(
-                    ending, process_animation(armature, action, diff, skeleton, parts_dict, frame_start=starting)
-                )
-            starting = ending
-        bpy.context.scene.frame_end = starting
+        with create_rotation_armatures(pose, skeleton) as armatures:
+            armature_a, armature_b = armatures
+            parts_dict = {part.uuid: {bone.bone for bone in part.bones} for part in armature_data.body_parts.body_parts}
+            starting = 0
+            for group in armature_data.groups:
+                ending = starting
+                for action in group.actions:
+                    diff = calculate_frame(armature_a, armature_b, action.animation.initial_pose)
+                    ending = max(
+                        ending, process_animation(armature, action, diff, skeleton, parts_dict, frame_start=starting)
+                    )
+                starting = ending
+            bpy.context.scene.frame_end = starting
         armature_data.is_applied = True
         return {"FINISHED"}
