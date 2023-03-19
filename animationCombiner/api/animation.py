@@ -6,7 +6,7 @@ from mathutils import Vector
 
 from animationCombiner.api.model import RawAnimation, Pose
 from animationCombiner.api.skeletons import Skeleton
-from animationCombiner.utils import normalize_pose
+from animationCombiner.utils.poses import normalize_pose
 from animationCombiner.utils.rotation import calculate_frames
 
 EMPTY_VECTOR = Vector((0, 0, 0))

@@ -8,18 +8,21 @@ Very ugly and ineffective way to properly calculate rotations for Armatures from
     * Save rotation from Armature B
 
 """
+import typing
 from contextlib import contextmanager
 
 import bpy
 from bpy.types import Armature
 from mathutils import Quaternion
 
-from animationCombiner.api.model import Pose
 from animationCombiner.api.skeletons import HDMSkeleton
 from animationCombiner.utils import create_armature, create_bones
 
+if typing.TYPE_CHECKING:
+    from animationCombiner.api.model import Pose
 
-def set_bone(pose: Pose, bone):
+
+def set_bone(pose: "Pose", bone):
     """Sets bone tail to the specific position"""
     if bone.parent:
         bone.head = bone.parent.tail
@@ -67,7 +70,7 @@ def create_rotation_armatures(initial_pose, skeleton):
         bpy.ops.object.mode_set(mode=mode, toggle=False)
 
 
-def calculate_frame(armature_a: Armature, armature_b: Armature, pose: Pose):
+def calculate_frame(armature_a: Armature, armature_b: Armature, pose: "Pose"):
     """Calculates rotation difference between initial pose and pose specified"""
     rotations = {}
     bpy.context.view_layer.objects.active = armature_a
@@ -83,7 +86,7 @@ def calculate_frame(armature_a: Armature, armature_b: Armature, pose: Pose):
     return rotations
 
 
-def calculate_frames(poses: list[Pose]) -> list[dict[str, Quaternion]]:
+def calculate_frames(poses: list["Pose"]) -> list[dict[str, Quaternion]]:
     """Calculates rotation difference between initial pose and all other poses"""
     frames = []
     with create_rotation_armatures(poses.poses[0], HDMSkeleton()) as armatures:

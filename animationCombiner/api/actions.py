@@ -15,7 +15,7 @@ from animationCombiner import get_preferences
 from animationCombiner.api.animation import Animation
 from animationCombiner.api.body_parts import BodyPartsConfiguration
 from animationCombiner.operators import SelectAllPartsOperator, SelectNoPartsOperator
-from animationCombiner.utils import copy, on_actions_update
+from animationCombiner.utils import copy, on_actions_update, update_errors
 
 
 class LengthGroup(bpy.types.PropertyGroup):
@@ -114,7 +114,7 @@ def get_body_parts(self):
 
 
 class EnabledPartsCollection(bpy.types.PropertyGroup):
-    checked: BoolProperty(name="", default=True, update=on_actions_update)
+    checked: BoolProperty(name="", default=True, update=update_errors)
     name: StringProperty()
     uuid: StringProperty()
 
@@ -127,6 +127,7 @@ class Action(PropertyGroup):
     transition: PointerProperty(type=TransitionGroup)
     animation: PointerProperty(type=Animation)
     body_parts: CollectionProperty(type=EnabledPartsCollection)
+    use_movement: BoolProperty(default=False, update=update_errors)
 
     def regenerate_parts(self, config: BodyPartsConfiguration):
         # TODO reuse existing config
@@ -139,6 +140,9 @@ class Action(PropertyGroup):
     def draw(self, layout):
         row = layout.column_flow(columns=1)
         row.prop(self, "name")
+        col = row.column()
+        col.enabled = self.animation.has_movement
+        col.prop(self, "use_movement")
 
         row.label(text="Animation length settings:")
         self.length_group.draw(row.box())
@@ -161,6 +165,7 @@ class Action(PropertyGroup):
 class GroupErrors(PropertyGroup):
     class Errors(Enum):
         COLLIDING_PARTS = ("Body parts are not unique", "Multiple actions apply to the same body parts")
+        MULTIPLE_MOVEMENTS = ("Multiple movements", "Movement can be used only from one action per group")
 
         @classmethod
         def convert(cls):

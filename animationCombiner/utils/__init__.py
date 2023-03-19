@@ -3,10 +3,11 @@ import math
 
 import bpy
 import numpy as np
+import typing
 from bpy.types import PropertyGroup, Property, bpy_prop_collection, EditBone, Armature
-from mathutils import Vector
 
-from animationCombiner.api.model import Pose
+if typing.TYPE_CHECKING:
+    from animationCombiner.api.model import Pose
 
 
 class Singleton(type):
@@ -74,6 +75,26 @@ def on_actions_update(self=None, context=None):
     armature.is_applied = False
 
 
+def update_errors(self=None, context=None):
+    armature = bpy.context.view_layer.objects.active.data
+    for group in armature.groups:
+        group.errors.clear()
+        parts = set()
+        has_movement = False
+        for action in group.actions:
+            if action.use_movement:
+                if has_movement:
+                    group.add_error("MULTIPLE_MOVEMENTS")
+                has_movement = True
+            for part in action.body_parts:
+                if part.checked:
+                    if part.uuid in parts:
+                        group.add_error("COLLIDING_PARTS")
+                        break
+                    parts.add(part.uuid)
+    armature.is_applied = False
+
+
 def create_armature(name: str = "Armature", exit_mode="POSE"):
     """Create the entire Armature"""
     bpy.ops.object.armature_add(enter_editmode=True)
@@ -94,7 +115,7 @@ def create_armature(name: str = "Armature", exit_mode="POSE"):
     return armature
 
 
-def create_bone(armature, name, parent: EditBone, pose: Pose, skeleton):
+def create_bone(armature, name, parent: EditBone, pose: "Pose", skeleton):
     bone = armature.edit_bones.new(name)
     bone.head = parent.tail
     bone.tail = pose.bones[name]
@@ -104,7 +125,7 @@ def create_bone(armature, name, parent: EditBone, pose: Pose, skeleton):
         create_bone(armature, child, bone, pose, skeleton)
 
 
-def create_bones(armature: Armature, skeleton, pose: Pose, root: EditBone = None):
+def create_bones(armature: Armature, skeleton, pose: "Pose", root: EditBone = None):
     if not root:
         root = armature.edit_bones.new("root")
         root.head = np.array((0, 0.1, 0))
@@ -112,15 +133,3 @@ def create_bones(armature: Armature, skeleton, pose: Pose, root: EditBone = None
 
     for child in skeleton.relations["root"]:
         create_bone(armature, child, root, pose, skeleton)
-
-
-def normalize_pose(poses: list[Pose]) -> [list[Pose], list[Vector]]:
-    """Normalizes the pose and returns both the new normalized pose and the translation vectors"""
-    translations = []
-    normalized = []
-    for pose in poses:
-        translation = pose.bones["root"].copy()
-        translation.negate()
-        translations.append(translation)
-        normalized.append(Pose({bone: pos - translation for bone, pos in pose.bones.items()}))
-    return normalized, translations
