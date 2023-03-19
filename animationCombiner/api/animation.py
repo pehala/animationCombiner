@@ -6,7 +6,7 @@ from mathutils import Vector
 
 from animationCombiner.api.model import RawAnimation, Pose
 from animationCombiner.api.skeletons import Skeleton
-from animationCombiner.utils.poses import normalize_pose
+from animationCombiner.utils.poses import normalize_poses
 from animationCombiner.utils.rotation import calculate_frames
 
 EMPTY_VECTOR = Vector((0, 0, 0))
@@ -38,12 +38,12 @@ class Animation(PropertyGroup):
     def from_raw(self, raw_animation: RawAnimation, skeleton: Skeleton):
         self.raw_order = ",".join(skeleton.order())
 
-        first_pose = raw_animation.poses[0]
+        normalized, translations = normalize_poses(raw_animation.poses)
+
+        first_pose = normalized[0]
         for bone in skeleton.order():
             pos = self.skeleton.add()
             pos.coords = first_pose.bones[bone]
-
-        normalized, translations = normalize_pose(raw_animation.poses)
 
         has_translations = any(vec != EMPTY_VECTOR for vec in translations)
         if has_translations:
@@ -52,11 +52,12 @@ class Animation(PropertyGroup):
                 move.translation = translation
 
         # Should fix rotation errors
-        for frame in calculate_frames(normalized):
+        frames = calculate_frames(normalized)
+        for x in frames:
             anim = self.animation.add()
             for bone in skeleton.order():
                 rotation = anim.rotations.add()
-                rotation.rotation = frame[bone]
+                rotation.rotation = x[bone]
 
     @cached_property
     def order(self):
