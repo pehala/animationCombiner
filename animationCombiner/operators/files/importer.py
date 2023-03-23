@@ -47,6 +47,8 @@ class ImportActionOperator(bpy.types.Operator, ImportHelper):
             armature = bpy.context.view_layer.objects.active.data
 
             action = armature.groups[armature.active].actions.add()
+            if len(armature.groups) == 1 and len(armature.groups[armature.active].actions) == 1:
+                action.use_skeleton = True
             copy(self.body_parts, action.body_parts)
             action.animation.from_raw(raw_animation, HDMSkeleton())
             action.length_group.original_length = raw_animation.length
