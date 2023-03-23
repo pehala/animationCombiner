@@ -24,4 +24,5 @@ class CreateArmatureOperator(bpy.types.Operator):
     def execute(self, context):
         bpy.ops.object.mode_set(mode="OBJECT", toggle=False)
         create_armature(context.scene.armature_name_preset)
+        bpy.ops.ac.groups_add()
         return {"FINISHED"}
