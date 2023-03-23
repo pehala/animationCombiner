@@ -73,12 +73,6 @@ class DeleteActionOperator(ActionControlsMixin, BaseDeleteItem, Operator):
     bl_idname = "ac.actions_delete_item"
 
 
-class MoveActionOperator(ActionControlsMixin, BaseMoveItem, Operator):
-    """Move Item Operator for ActionList"""
-
-    bl_idname = "ac.actions_move_item"
-
-
 class GroupSelect(Menu):
     bl_idname = "AC_MT_group_select"
     bl_label = "Select group"
@@ -126,11 +120,9 @@ class ActionListPanel(Panel):
         layout.template_list(ActionsUIList.bl_idname, "", group, "actions", group, "active", sort_lock=True)
         layout.separator()
 
-        col = layout.column().column_flow(columns=2, align=True)
-        col.operator(ImportActionOperator.bl_idname, text="Import", icon="IMPORT")
-        col.operator(DeleteActionOperator.bl_idname, text="Delete", icon="REMOVE")
-        col.operator(MoveActionOperator.bl_idname, text="Up", icon="TRIA_UP").direction = "UP"
-        col.operator(MoveActionOperator.bl_idname, text="Down", icon="TRIA_DOWN").direction = "DOWN"
+        row = layout.row(align=True)
+        row.operator(ImportActionOperator.bl_idname, text="Import", icon="IMPORT")
+        row.operator(DeleteActionOperator.bl_idname, text="Delete", icon="REMOVE")
 
         row = layout.row(align=True)
         potential_group = obj.groups[obj.move_to_group]
