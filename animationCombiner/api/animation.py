@@ -73,4 +73,5 @@ class Animation(PropertyGroup):
 
     @property
     def initial_pose(self):
-        return Pose({name: coords.coords for name, coords in zip(self.order, self.skeleton)})
+        initial_translation = self.movement[0].translation if self.has_movement else 0
+        return Pose({name: coords.coords - initial_translation for name, coords in zip(self.order, self.skeleton)})

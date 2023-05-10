@@ -34,7 +34,7 @@ def process_animation(armature, action: Action, base_skeleton, skeleton, parts, 
         for name, rotation in zip(order, frame.rotations):
             if action.use_movement and name == "root":
                 bone = armature.pose.bones[name]
-                bone.location = animation.movement[i].translation
+                bone.location += animation.movement[i].translation - animation.movement[max(0, i - 1)].translation
                 bone.keyframe_insert(
                     data_path="location",
                     frame=last_frame,
