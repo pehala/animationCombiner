@@ -1,3 +1,4 @@
+import math
 import typing
 
 import bpy
@@ -48,35 +49,40 @@ class ExportSomeData(Operator, ExportHelper):
         exporter = find_exporter_for_path(self.filepath)()
         armature = bpy.context.view_layer.objects.active
 
-        config = armature.data.body_parts
-        disabled_parts = {part.uuid for part in self.body_parts if not part.checked}
+        armature.rotation_euler.rotate_axis("X", math.radians(-90))
 
-        disabled_bones = set()
-        for part in config.body_parts:
-            if part.uuid in disabled_parts:
-                for bone in part.bones:
-                    disabled_bones.add(bone.bone)
+        try:
+            config = armature.data.body_parts
+            disabled_parts = {part.uuid for part in self.body_parts if not part.checked}
 
-        # curves = {}
-        # for fcurve in armature.animation_data.action.fcurves:
-        #     name = fcurve.data_path.split('"')[1]
-        #     curves.setdefault(name, []).append(fcurve)
-        #
-        # for bone_curves in curves.values():
-        #     bone_curves.sort(key=lambda c: c.array_index)
+            disabled_bones = set()
+            for part in config.body_parts:
+                if part.uuid in disabled_parts:
+                    for bone in part.bones:
+                        disabled_bones.add(bone.bone)
 
-        transitions = []
-        for frame in range(bpy.context.scene.frame_start, bpy.context.scene.frame_end):
-            bpy.context.scene.frame_set(frame)
-            bones = {}
-            for bone in armature.pose.bones:
-                bones[bone.name] = bone.tail.copy()
-            for bone in disabled_bones:
-                bones[bone] = Vector((0, 0, 0))
-            transitions.append(Pose(bones))
-        bpy.context.scene.frame_set(bpy.context.scene.frame_start)
-        with open(self.filepath, "w") as file:
-            exporter.export_animation(RawAnimation(transitions, None), disabled_bones, file)
+            # curves = {}
+            # for fcurve in armature.animation_data.action.fcurves:
+            #     name = fcurve.data_path.split('"')[1]
+            #     curves.setdefault(name, []).append(fcurve)
+            #
+            # for bone_curves in curves.values():
+            #     bone_curves.sort(key=lambda c: c.array_index)
+
+            transitions = []
+            for frame in range(bpy.context.scene.frame_start, bpy.context.scene.frame_end):
+                bpy.context.scene.frame_set(frame)
+                bones = {}
+                for bone in armature.pose.bones:
+                    bones[bone.name] = bone.tail.copy()
+                for bone in disabled_bones:
+                    bones[bone] = Vector((0, 0, 0))
+                transitions.append(Pose(bones))
+            bpy.context.scene.frame_set(bpy.context.scene.frame_start)
+            with open(self.filepath, "w") as file:
+                exporter.export_animation(RawAnimation(transitions, None), disabled_bones, file)
+        finally:
+            armature.rotation_euler.rotate_axis("X", math.radians(90))
         return {"FINISHED"}
 
     def draw(self, context: Context) -> None:
