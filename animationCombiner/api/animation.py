@@ -53,11 +53,11 @@ class Animation(PropertyGroup):
 
         # Should fix rotation errors
         frames = calculate_frames(normalized)
-        for x in frames:
+        for frame in frames:
             anim = self.animation.add()
             for bone in skeleton.order():
                 rotation = anim.rotations.add()
-                rotation.rotation = x[bone]
+                rotation.rotation = frame[bone]
 
     @cached_property
     def order(self):
@@ -71,7 +71,8 @@ class Animation(PropertyGroup):
     def length(self):
         return len(self.animation)
 
-    @property
-    def initial_pose(self):
-        initial_translation = self.movement[0].translation if self.has_movement else 0
+    def initial_pose(self, normalized=False):
+        initial_translation = (
+            self.movement[0].translation if self.has_movement and not normalized else Vector((0, 0, 0))
+        )
         return Pose({name: coords.coords - initial_translation for name, coords in zip(self.order, self.skeleton)})
