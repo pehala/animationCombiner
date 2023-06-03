@@ -39,12 +39,13 @@ class ApplyOperator(bpy.types.Operator):
 
         # Select skeleton from poses
         pose = None
-        normalized_pose = None
+        translation = None
         for group in armature_data.groups:
             for action in group.actions:
                 if action.use_skeleton:
-                    pose = action.animation.initial_pose()
-                    normalized_pose = action.animation.initial_pose(normalized=True)
+                    animation = action.animation
+                    pose = animation.initial_pose()
+                    translation = animation.movement[0].translation if animation.has_movement else Vector((0, 0, 0))
 
         skeleton = HDMSkeleton()
 
@@ -56,11 +57,12 @@ class ApplyOperator(bpy.types.Operator):
             if bone is not None:
                 armature_data.edit_bones.remove(bone)
 
+        armature.location = translation
         create_bones(armature_data, skeleton, pose)
         bpy.ops.object.mode_set(mode="POSE", toggle=False)
         armature.pose.bones["root"].location = Vector((0, 0, 0))
 
-        with create_rotation_armatures(normalized_pose, skeleton) as armatures:
+        with create_rotation_armatures(pose, skeleton) as armatures:
             armature_a, armature_b = armatures
             parts_dict = {part.uuid: {bone.bone for bone in part.bones} for part in armature_data.body_parts.body_parts}
             starting = 0
@@ -69,7 +71,7 @@ class ApplyOperator(bpy.types.Operator):
                 for action in group.actions:
                     if not action.enabled:
                         continue
-                    diff = calculate_frame(armature_a, armature_b, action.animation.initial_pose(normalized=True))
+                    diff = calculate_frame(armature_a, armature_b, action.animation.initial_pose())
                     ending = max(
                         ending, process_animation(armature, action, diff, skeleton, parts_dict, frame_start=starting)
                     )
