@@ -67,6 +67,8 @@ class ApplyOperator(bpy.types.Operator):
             for group in armature_data.groups:
                 ending = starting
                 for action in group.actions:
+                    if not action.enabled:
+                        continue
                     diff = calculate_frame(armature_a, armature_b, action.animation.initial_pose(normalized=True))
                     ending = max(
                         ending, process_animation(armature, action, diff, skeleton, parts_dict, frame_start=starting)
