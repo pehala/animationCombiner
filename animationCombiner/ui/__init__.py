@@ -9,8 +9,8 @@ from animationCombiner.operators import (
     SelectObjectOperator,
 )
 from animationCombiner.operators.armature import CreateArmatureOperator
-from animationCombiner.operators.files.exporter import ExportSomeData
 from animationCombiner.operators.apply import ApplyOperator
+from animationCombiner.ui.menus import ExporterMenu
 from animationCombiner.utils.weakget import weakget
 
 
@@ -126,4 +126,5 @@ class ApplyPanel(Panel):
         col = row.column()
         col.enabled = len(errors) == 0
         col.operator(ApplyOperator.bl_idname, text="Apply", icon="WORKSPACE")
-        row.column().operator(ExportSomeData.bl_idname, text="Export", icon="EXPORT")
+        # row.column().operator(BaseExporter.bl_idname, text="Export", icon="EXPORT")
+        row.column().menu(ExporterMenu.bl_idname, text="Export", icon="EXPORT")

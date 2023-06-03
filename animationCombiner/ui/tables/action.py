@@ -2,11 +2,11 @@ import bpy
 from bpy.props import CollectionProperty, IntProperty
 from bpy.types import Operator, UIList, Panel, Context, Menu
 
+from animationCombiner.ui.menus import ImporterMenu
 from animationCombiner.utils import on_actions_update
 from animationCombiner.operators import SelectGroupOperator, MoveActionToGroupOperator
-from animationCombiner.operators.files.importer import ImportActionOperator
 from animationCombiner.ui.action import ActionPanel
-from animationCombiner.ui.table_controls import BaseControlsMixin, BaseDeleteItem, BaseMoveItem
+from animationCombiner.ui.table_controls import BaseControlsMixin, BaseDeleteItem
 
 
 class ActionsUIList(UIList):
@@ -121,7 +121,7 @@ class ActionListPanel(Panel):
         layout.separator()
 
         row = layout.row(align=True)
-        row.operator(ImportActionOperator.bl_idname, text="Import", icon="IMPORT")
+        row.menu(ImporterMenu.bl_idname, text="Import", icon="IMPORT")
         row.operator(DeleteActionOperator.bl_idname, text="Delete", icon="REMOVE")
 
         row = layout.row(align=True)

@@ -1,36 +1,23 @@
-import typing
+from typing import Collection, Set
 
 import bpy
-from bpy.props import StringProperty, CollectionProperty, BoolProperty
-from bpy.types import Context, Operator, Event
+from bpy.props import CollectionProperty, BoolProperty
+from bpy.types import Operator, Context, Event
 from bpy_extras.io_utils import ExportHelper
-from mathutils import Quaternion, Vector
+from mathutils import Vector
 
 from animationCombiner.api.actions import EnabledPartsCollection
 from animationCombiner.api.body_parts import BodyPartsConfiguration
-from animationCombiner.api.model import Pose, RawAnimation
-from animationCombiner.parsers import find_exporter_for_path
+from animationCombiner.api.model import RawAnimation, Pose
 from animationCombiner.utils.coordinates import invert_yz
 
 
-def to_quaternion(curves, frame):
-    return Quaternion(Vector(curves[i].evaluate(frame) for i in range(3)), curves[3].evaluate(frame))
-
-
-class ExportSomeData(Operator, ExportHelper):
+class BaseExportOperator(Operator, ExportHelper):
     """Exports the animation data. Need to be processed first"""
 
-    bl_idname = "ac.export_file"  # important since its how bpy.ops.import_test.some_data is constructed
-    bl_label = "Export Animation"
+    bl_idname = "ac.base_export_file"
+    bl_label = "Export"
 
-    # ExportHelper mixin class uses this
-    filename_ext = ".data"
-
-    filter_glob: StringProperty(
-        default="*.data",
-        options={"HIDDEN"},
-        maxlen=255,  # Max internal buffer length, longer would be clamped.
-    )
     invert_yz: BoolProperty(
         name="Use Y for height",
         description="In Blender Z coordinate is height, set to true if the input file uses Y for height. It does not "
@@ -45,12 +32,11 @@ class ExportSomeData(Operator, ExportHelper):
             new_part.name = part.name
             new_part.uuid = part.get_uuid()
 
-    def invoke(self, context: Context, event: Event) -> typing.Set[str]:
+    def invoke(self, context: Context, event: Event) -> Set[str]:
         self.generate_parts(bpy.context.view_layer.objects.active.data.body_parts)
         return super().invoke(context, event)
 
     def execute(self, context):
-        exporter = find_exporter_for_path(self.filepath)()
         armature = bpy.context.view_layer.objects.active
 
         config = armature.data.body_parts
@@ -85,8 +71,11 @@ class ExportSomeData(Operator, ExportHelper):
             invert_yz(data)
 
         with open(self.filepath, "w") as file:
-            exporter.export_animation(data, disabled_bones, file)
+            self.export_animation(data, disabled_bones, file)
         return {"FINISHED"}
+
+    def export_animation(self, animation: RawAnimation, disabled_bones: Collection[str], file):
+        """Writes animation to a file, kwargs are for"""
 
     def draw(self, context: Context) -> None:
         layout = self.layout
