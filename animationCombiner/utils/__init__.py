@@ -49,6 +49,8 @@ def on_actions_update(self=None, context=None):
     for group in armature.groups:
         group_length = 0
         for action in group.actions:
+            if not action.enabled:
+                continue
             group_length = max(action.length_group.length, group_length)
             action.length_group.length = action.length_group.real_length + action.transition.real_length
             action.length_group.update_end()
@@ -60,6 +62,11 @@ def on_actions_update(self=None, context=None):
     armature.is_applied = False
 
 
+def complete_update(self=None, context=None):
+    on_actions_update(self, context)
+    update_errors(self, context)
+
+
 def update_errors(self=None, context=None):
     armature = bpy.context.view_layer.objects.active.data
     use_skeleton = False
@@ -68,6 +75,8 @@ def update_errors(self=None, context=None):
         parts = set()
         has_movement = False
         for action in group.actions:
+            if not action.enabled:
+                continue
             if action.use_skeleton:
                 if use_skeleton:
                     group.add_error("MULTIPLE_SKELETONS")

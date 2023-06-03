@@ -15,7 +15,7 @@ from animationCombiner import get_preferences
 from animationCombiner.api.animation import Animation
 from animationCombiner.api.body_parts import BodyPartsConfiguration
 from animationCombiner.operators import SelectAllPartsOperator, SelectNoPartsOperator
-from animationCombiner.utils import copy, on_actions_update, update_errors
+from animationCombiner.utils import copy, on_actions_update, update_errors, complete_update
 
 
 class LengthGroup(bpy.types.PropertyGroup):
@@ -135,6 +135,9 @@ class Action(PropertyGroup):
     transition: PointerProperty(type=TransitionGroup)
     animation: PointerProperty(type=Animation)
     body_parts: CollectionProperty(type=EnabledPartsCollection)
+    enabled: BoolProperty(
+        default=True, update=complete_update, name="Enabled", description="True, if the action should be applied"
+    )
     use_movement: BoolProperty(
         default=False,
         update=update_errors,
@@ -163,6 +166,7 @@ class Action(PropertyGroup):
         col = row.column()
         col.enabled = self.animation.has_movement
         col.prop(self, "use_movement")
+        row.prop(self, "enabled")
 
         row.label(text="Animation length settings:")
         self.length_group.draw(row.box())
