@@ -1,8 +1,7 @@
-import math
 import typing
 
 import bpy
-from bpy.props import StringProperty, CollectionProperty
+from bpy.props import StringProperty, CollectionProperty, BoolProperty
 from bpy.types import Context, Operator, Event
 from bpy_extras.io_utils import ExportHelper
 from mathutils import Quaternion, Vector
@@ -11,6 +10,7 @@ from animationCombiner.api.actions import EnabledPartsCollection
 from animationCombiner.api.body_parts import BodyPartsConfiguration
 from animationCombiner.api.model import Pose, RawAnimation
 from animationCombiner.parsers import find_exporter_for_path
+from animationCombiner.utils.coordinates import invert_yz
 
 
 def to_quaternion(curves, frame):
@@ -31,7 +31,11 @@ class ExportSomeData(Operator, ExportHelper):
         options={"HIDDEN"},
         maxlen=255,  # Max internal buffer length, longer would be clamped.
     )
-
+    invert_yz: BoolProperty(
+        name="Use Y for height",
+        description="In Blender Z coordinate is height, set to true if the input file uses Y for height. It does not "
+        "affect functionality, it just improves how it is displayed in Blender.",
+    )
     body_parts: CollectionProperty(type=EnabledPartsCollection)
 
     def generate_parts(self, config: BodyPartsConfiguration):
@@ -49,45 +53,45 @@ class ExportSomeData(Operator, ExportHelper):
         exporter = find_exporter_for_path(self.filepath)()
         armature = bpy.context.view_layer.objects.active
 
-        armature.rotation_euler.rotate_axis("X", math.radians(-90))
+        config = armature.data.body_parts
+        disabled_parts = {part.uuid for part in self.body_parts if not part.checked}
 
-        try:
-            config = armature.data.body_parts
-            disabled_parts = {part.uuid for part in self.body_parts if not part.checked}
+        disabled_bones = set()
+        for part in config.body_parts:
+            if part.uuid in disabled_parts:
+                for bone in part.bones:
+                    disabled_bones.add(bone.bone)
 
-            disabled_bones = set()
-            for part in config.body_parts:
-                if part.uuid in disabled_parts:
-                    for bone in part.bones:
-                        disabled_bones.add(bone.bone)
+        # curves = {}
+        # for fcurve in armature.animation_data.action.fcurves:
+        #     name = fcurve.data_path.split('"')[1]
+        #     curves.setdefault(name, []).append(fcurve)
+        #
+        # for bone_curves in curves.values():
+        #     bone_curves.sort(key=lambda c: c.array_index)
 
-            # curves = {}
-            # for fcurve in armature.animation_data.action.fcurves:
-            #     name = fcurve.data_path.split('"')[1]
-            #     curves.setdefault(name, []).append(fcurve)
-            #
-            # for bone_curves in curves.values():
-            #     bone_curves.sort(key=lambda c: c.array_index)
+        transitions = []
+        for frame in range(bpy.context.scene.frame_start, bpy.context.scene.frame_end):
+            bpy.context.scene.frame_set(frame)
+            bones = {}
+            for bone in armature.pose.bones:
+                bones[bone.name] = bone.tail.copy()
+            for bone in disabled_bones:
+                bones[bone] = Vector((0, 0, 0))
+            transitions.append(Pose(bones))
+        bpy.context.scene.frame_set(bpy.context.scene.frame_start)
+        data = RawAnimation(transitions, None)
+        if self.invert_yz:
+            invert_yz(data)
 
-            transitions = []
-            for frame in range(bpy.context.scene.frame_start, bpy.context.scene.frame_end):
-                bpy.context.scene.frame_set(frame)
-                bones = {}
-                for bone in armature.pose.bones:
-                    bones[bone.name] = bone.tail.copy()
-                for bone in disabled_bones:
-                    bones[bone] = Vector((0, 0, 0))
-                transitions.append(Pose(bones))
-            bpy.context.scene.frame_set(bpy.context.scene.frame_start)
-            with open(self.filepath, "w") as file:
-                exporter.export_animation(RawAnimation(transitions, None), disabled_bones, file)
-        finally:
-            armature.rotation_euler.rotate_axis("X", math.radians(90))
+        with open(self.filepath, "w") as file:
+            exporter.export_animation(data, disabled_bones, file)
         return {"FINISHED"}
 
     def draw(self, context: Context) -> None:
         layout = self.layout
 
+        layout.prop(data=self, property="invert_yz")
         layout.label(text="Enabled Body Parts:")
         box = layout.box()
         columns = box.column_flow(columns=2, align=True)

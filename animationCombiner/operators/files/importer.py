@@ -2,7 +2,7 @@
 import os
 
 import bpy
-from bpy.props import StringProperty, CollectionProperty
+from bpy.props import StringProperty, CollectionProperty, BoolProperty
 from bpy.types import Context
 from bpy_extras.io_utils import ImportHelper
 
@@ -11,6 +11,7 @@ from animationCombiner.api.body_parts import BodyPartsConfiguration
 from animationCombiner.utils import on_actions_update, copy
 from animationCombiner.api.skeletons import HDMSkeleton
 from animationCombiner.parsers import ParserError, load_animation_from_path, PARSERS
+from animationCombiner.utils.coordinates import invert_yz
 
 
 class ImportActionOperator(bpy.types.Operator, ImportHelper):
@@ -27,6 +28,11 @@ class ImportActionOperator(bpy.types.Operator, ImportHelper):
         maxlen=255,  # Max internal buffer length, longer would be clamped.
     )
     body_parts: CollectionProperty(type=EnabledPartsCollection)
+    invert_yz: BoolProperty(
+        name="Use Y for height",
+        description="In Blender Z coordinate is height, set to true if the input file uses Y for height. It does not "
+        "affect functionality, it just improves how it is displayed in Blender.",
+    )
 
     def generate_parts(self, config: BodyPartsConfiguration):
         self.body_parts.clear()
@@ -44,6 +50,9 @@ class ImportActionOperator(bpy.types.Operator, ImportHelper):
         try:
             path = self.properties.filepath
             raw_animation = load_animation_from_path(path)
+            if self.invert_yz:
+                invert_yz(raw_animation)
+
             armature = bpy.context.view_layer.objects.active.data
 
             action = armature.groups[armature.active].actions.add()
@@ -65,6 +74,7 @@ class ImportActionOperator(bpy.types.Operator, ImportHelper):
     def draw(self, context: Context) -> None:
         layout = self.layout
 
+        layout.prop(data=self, property="invert_yz")
         layout.label(text="Body Parts:")
         box = layout.box()
         columns = box.column_flow(columns=2, align=True)

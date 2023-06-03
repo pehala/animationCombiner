@@ -1,8 +1,5 @@
 """Collection of all utility functions/classes that didnt fit anywhere else"""
-import math
-
 import bpy
-import numpy as np
 import typing
 from bpy.types import PropertyGroup, Property, bpy_prop_collection, EditBone, Armature
 from mathutils import Vector
@@ -99,12 +96,6 @@ def create_armature(name: str = "Armature", exit_mode="POSE"):
     armature.data.name = name
 
     armature.data.edit_bones.remove(armature.data.edit_bones.get("Bone"))
-
-    # Exit Armature editing
-    bpy.ops.object.mode_set(mode="OBJECT", toggle=False)
-
-    armature.rotation_mode = "XYZ"
-    armature.rotation_euler.rotate_axis("X", math.radians(90))
 
     bpy.ops.object.mode_set(mode=exit_mode, toggle=False)
     return armature
