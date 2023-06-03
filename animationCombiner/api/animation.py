@@ -75,4 +75,4 @@ class Animation(PropertyGroup):
         initial_translation = (
             self.movement[0].translation if self.has_movement and not normalized else Vector((0, 0, 0))
         )
-        return Pose({name: coords.coords - initial_translation for name, coords in zip(self.order, self.skeleton)})
+        return Pose({name: coords.coords + initial_translation for name, coords in zip(self.order, self.skeleton)})
