@@ -1,32 +1,27 @@
 """Module containing all Operators related to Importing actions"""
 import os
+from typing import Iterable
 
 import bpy
-from bpy.props import StringProperty, CollectionProperty, BoolProperty
-from bpy.types import Context
+from bpy.props import CollectionProperty, BoolProperty
+from bpy.types import Context, Operator
 from bpy_extras.io_utils import ImportHelper
 
 from animationCombiner.api.actions import EnabledPartsCollection
 from animationCombiner.api.body_parts import BodyPartsConfiguration
+from animationCombiner.api.model import RawAnimation
 from animationCombiner.utils import on_actions_update, copy
 from animationCombiner.api.skeletons import HDMSkeleton
-from animationCombiner.parsers import ParserError, load_animation_from_path, PARSERS
+from animationCombiner.parsers.error import ParserError
 from animationCombiner.utils.coordinates import invert_yz
 
 
-class ImportActionOperator(bpy.types.Operator, ImportHelper):
+class BaseImportOperator(Operator, ImportHelper):
     """Imports new action"""
 
-    bl_label = "Import file"
-    bl_idname = "ac.file_selector"
+    bl_idname = "ac.base_import_file"
+    bl_label = "Import"
 
-    filename_ext = ".data"
-    hide_props_region = True
-    filter_glob: StringProperty(
-        default="",
-        options={"HIDDEN"},
-        maxlen=255,  # Max internal buffer length, longer would be clamped.
-    )
     body_parts: CollectionProperty(type=EnabledPartsCollection)
     invert_yz: BoolProperty(
         name="Use Y for height",
@@ -42,14 +37,15 @@ class ImportActionOperator(bpy.types.Operator, ImportHelper):
             new_part.uuid = part.get_uuid()
 
     def invoke(self, context, _event):
-        self.filter_glob = "*" + ";*".join(PARSERS.keys())
         self.generate_parts(bpy.context.view_layer.objects.active.data.get_body_parts())
         return super().invoke(context, _event)
 
     def execute(self, context):
         try:
             path = self.properties.filepath
-            raw_animation = load_animation_from_path(path)
+            with open(path, "r") as file:
+                raw_animation = self.load_animation(file)
+
             if self.invert_yz:
                 invert_yz(raw_animation)
 
@@ -80,3 +76,10 @@ class ImportActionOperator(bpy.types.Operator, ImportHelper):
         columns = box.column_flow(columns=2, align=True)
         for part in self.body_parts:
             columns.prop(part, "checked", text=part.name)
+
+    def load_animation(self, file) -> RawAnimation:
+        """Loads & returns iterable of transition to achieve the animation"""
+        return next(iter(self.load_animations(file)))
+
+    def load_animations(self, file) -> Iterable[RawAnimation]:
+        """Returns all animations that are present in the file"""
