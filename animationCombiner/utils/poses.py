@@ -9,7 +9,6 @@ def normalize_poses(poses: list[Pose]) -> [list[Pose], list[Vector]]:
     normalized = []
     for pose in poses:
         translation = pose.bones["root"].copy()
-        translation.negate()
         translations.append(translation)
-        normalized.append(Pose({bone: (pos + translation) for bone, pos in pose.bones.items()}))
+        normalized.append(Pose({bone: (pos - translation) for bone, pos in pose.bones.items()}))
     return normalized, translations

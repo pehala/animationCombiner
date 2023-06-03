@@ -1,6 +1,5 @@
 """Animation processing module"""
 from mathutils import Quaternion
-
 from .api.actions import Action
 
 
@@ -33,9 +32,8 @@ def process_animation(armature, action: Action, base_skeleton, skeleton, parts, 
         last_frame = frame_start + (i * frame_delay)
         for name, rotation in zip(order, frame.rotations):
             if action.use_movement and name == "root":
-                bone = armature.pose.bones[name]
-                bone.location += animation.movement[i].translation - animation.movement[max(0, i - 1)].translation
-                bone.keyframe_insert(
+                armature.location += animation.movement[i].translation - animation.movement[max(0, i - 1)].translation
+                armature.keyframe_insert(
                     data_path="location",
                     frame=last_frame,
                     group=name,
